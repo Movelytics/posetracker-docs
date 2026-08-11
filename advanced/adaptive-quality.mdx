@@ -1,0 +1,89 @@
+---
+title: "Adaptive quality"
+description: "Capture profiles, capturePriority, FPS floors, and performance warnings."
+---
+
+The SDK adapts **camera capture** so MoveNet stays real-time. Inference is always 192×192; capture resolution drives preprocess cost (especially Android mid-range / Mali).
+
+## capturePriority
+
+```tsx
+<PoseTrackerProvider options={{ capturePriority: 'performance' }} />
+// or
+<PoseTrackerProvider options={{ capturePriority: 'quality' }} />
+```
+
+| Value | Behaviour |
+|---|---|
+| `performance` (**default**) | Hold platform FPS floor; may soft-cap / downgrade capture (often `basic` on Android). Preview can look soft. |
+| `quality` | Keep sharp / HD capture; **no** FPS-driven downgrades. Pose FPS may drop. Still emits `performance_warning`. Crash-guard can still change tiers. |
+
+Leave the default unless the product needs a sharp webcam feed.
+
+## qualityChoice
+
+```tsx
+<PoseTrackerProvider
+  options={{
+    qualityChoice: 'AdaptiveChoice', // default
+    // or pin: 'prime' | 'pro' | 'lite' | 'ultralite' | 'basic'
+  }}
+/>
+```
+
+## Profiles
+
+| Id | Capture (ideal) | Frame rate |
+|---|---|---|
+| `prime` | 1280×720 | 30 |
+| `pro` | 960×540 | 30 |
+| `lite` | 640×480 | 30 |
+| `ultralite` | 480×360 | 24 |
+| `basic` | 320×240 | 20 |
+
+Ladder (high → low): `prime → pro → lite → ultralite → basic`.
+
+## FPS floors
+
+| Platform | Min target (floor) | Ideal band |
+|---|---|---|
+| iOS | **30** | ~30–50+ |
+| Android | **10** | ~10–30 |
+
+1. **Warm-up estimate** — zeros bench before `getUserMedia`; may pick a lower profile (`warmup_estimate`).
+2. **Live auto-downgrade** — median inference ms stays too high → drop one tier (`low_fps`), emit `quality_changed`.
+3. **performance_warning** — still below floor on `basic` → `device_too_slow` (throttled).
+
+Pinning `qualityChoice` sets the start tier; `capturePriority: 'quality'` only disables automatic FPS-driven drops.
+
+## Crash-loop guard
+
+Per `(sdkVersion, profile)`: `PROBING → PASSED` or `FAILED` if the previous run died while probing. Failed tiers walk down the ladder. Persists when `@react-native-async-storage/async-storage` is installed (optional, recommended).
+
+## Host listeners
+
+```tsx
+usePoseTracker({
+  onQualityChanged: (e) => {
+    // e.previousProfile, e.activeProfile, e.reason, e.detail
+  },
+  onPerformanceWarning: (e) => {
+    // e.code === 'device_too_slow', e.meanFps, e.message (English)
+  },
+});
+
+const { quality } = usePoseTracker();
+// quality.activeProfile, meanFps, minTargetFps, idealFpsRange, capturePriority, …
+```
+
+## Recommendations
+
+1. Keep `qualityChoice: 'AdaptiveChoice'` and `capturePriority: 'performance'`.
+2. Handle `onPerformanceWarning` in your own UX / analytics (localize before end users).
+3. Do not force `prime` on mid-range Android in production.
+4. Install AsyncStorage so the crash-guard persists.
+
+## Related
+
+- [Events](/reference/events) — `quality_changed`, `performance_warning`
+- [Provider options](/reference/provider-client)

@@ -1,0 +1,86 @@
+---
+title: "Preload lifecycle"
+description: "When MoveNet loads, cold-start modes, and the lobby warmer pattern."
+---
+
+Mounting `PoseTrackerProvider` alone does **not** load the model (unless `autoPreload`).
+
+## What starts what
+
+| Action | Loads AI / model? | Opens camera? |
+|---|---|---|
+| Mount `<PoseTrackerProvider>` | No | No |
+| `<PoseTrackerProvider autoPreload>` | Yes — `preload()` basic | No |
+| `preload()` / `warmup()` | Yes (default **basic**) | No |
+| `preload({ coldStart: 'full' })` | Yes | Yes (may prompt) |
+| `<WebViewPoseView coldStart="basic" />` | When page boots | No |
+| `<WebViewPoseView />` (default `full`) | When page boots | Yes |
+
+## Cold-start modes
+
+| Mode | Behaviour | Use when |
+|---|---|---|
+| `basic` (preload default) | TF.js + MoveNet + zeros warm-up; **no** `getUserMedia` | Lobby / home / hidden warmer |
+| `full` (WebViewPoseView default) | Same, then open camera | Visible camera screen |
+
+## Recommended pattern
+
+```tsx
+// Root — client only
+<PoseTrackerProvider>
+  <Navigation />
+</PoseTrackerProvider>
+
+// Lobby — model warm-up, no permission prompt
+function HomeScreen() {
+  const { preload, status } = usePoseTracker();
+
+  useEffect(() => {
+    void preload(); // basic, idempotent
+  }, [preload]);
+
+  return (
+    <>
+      <View style={{ width: 1, height: 1, opacity: 0 }} pointerEvents="none">
+        <WebViewPoseView coldStart="basic" />
+      </View>
+      <Button title="Start" disabled={status !== 'ready'} onPress={goToCamera} />
+    </>
+  );
+}
+
+// Camera — user expects the permission prompt
+function CameraScreen() {
+  return <WebViewPoseView style={{ flex: 1 }} />; // coldStart="full"
+}
+```
+
+Optional: `<PoseTrackerProvider autoPreload>` still uses **basic** (no camera).
+
+## Important WebView detail
+
+For the default WebView backend, `preload()` / `warmup()` **waits** until a mounted `WebViewPoseView` posts `ready`. Calling `preload()` with **no** WebView in the tree waits until timeout.
+
+Usage metering (`camera_start`) runs when the camera session actually starts — not during basic preload.
+
+## Status path
+
+Typical: `configuring` → `downloading` → `warming` → `ready` (fatal `error` only if the local/online model path fails hard). Handshake/engine failures degrade to **keypoints-only** without blocking `ready`.
+
+## Background / battery
+
+Handled inside the WebView page (no host wiring):
+
+- App backgrounded → camera tracks stopped, inference loop halted; model stays in RAM for fast resume
+- Foreground → camera reacquired (including any quality downgrade)
+- Unmount `WebViewPoseView` → page destroyed; camera / WebGL / model freed
+- ~45 consecutive inference failures → stop loop, release camera, `error` event
+- iOS `inactive` (Control Center) is **not** treated as background
+
+`client.dispose()` tears down everything.
+
+## Related
+
+- [Permissions](/permissions)
+- [Provider & client](/reference/provider-client)
+- [Adaptive quality](/advanced/adaptive-quality)

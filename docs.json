@@ -35,6 +35,23 @@
         ]
       },
       {
+        "group": "Reference",
+        "pages": [
+          "reference/provider-client",
+          "reference/webview-pose-view",
+          "reference/exercises",
+          "reference/events",
+          "reference/features-plans"
+        ]
+      },
+      {
+        "group": "Advanced",
+        "pages": [
+          "advanced/preload",
+          "advanced/adaptive-quality"
+        ]
+      },
+      {
         "group": "AI & agents",
         "pages": [
           "llms"

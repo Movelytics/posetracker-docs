@@ -1,0 +1,140 @@
+---
+title: "Exercises"
+description: "FSM catalog, face_* aliases, jump customs, and StartExerciseOptions."
+---
+
+Exercises require **full-engine** mode: a valid `apiToken`, successful handshake, and loaded remote engine bundle. Without a key, use [keypoints](/keypoints) only.
+
+Authoritative lists after configure:
+
+```ts
+const { exercises, client, startExercise, stopExercise } = usePoseTracker();
+
+// FSM movements from the handshake manifest
+client.getAvailableExercises(); // same as `exercises` on the hook
+
+// Customs shipped in the engine bundle (not in Strapi movement list)
+client.getAvailableCustomExercises(); // jump_analysis, air_time_jump, …
+```
+
+## Start / stop
+
+```tsx
+function CameraScreen() {
+  const { startExercise, stopExercise, mode } = usePoseTracker({
+    onCounter: (e) => console.log(e.count, e.formScore?.grade),
+    onPosture: (e) => console.log(e.ready, e.hint),
+  });
+
+  // when mode === 'full-engine' and status === 'ready':
+  // startExercise('squat', { difficulty: 'medium' });
+
+  return <WebViewPoseView style={{ flex: 1 }} drawSkeleton drawPlacementBox />;
+}
+```
+
+## StartExerciseOptions
+
+| Option | Type | Default | Used by |
+|---|---|---|---|
+| `difficulty` | `string` | `'medium'` | FSM exercises — key into `scale_acceptance` |
+| `userHeightCm` | `number` | — | **Required** for `jump_analysis` |
+| `devicePitchDeg` | `number` | — | Jump exercises — camera tilt compensation |
+
+```ts
+startExercise('squat', { difficulty: 'hard' });
+startExercise('face_squat'); // alias → squat
+startExercise('jump_analysis', { userHeightCm: 178, devicePitchDeg: 5 });
+startExercise('air_time_jump');
+stopExercise();
+```
+
+## FSM catalog (typical V3 ids)
+
+Exact ids come from the **server manifest** (`exercises[].id`). Hosts and demos usually call V3 keys; Strapi may still ship legacy `face_*` ids — both work via aliases.
+
+| Canonical id | Legacy alias | Type |
+|---|---|---|
+| `squat` | `face_squat` | dynamic |
+| `push_up` | `face_pushup` | dynamic |
+| `plank` | `face_plank` | static |
+| `lunge` | `face_lunge` | dynamic |
+| `jumping_jack` | `face_jumping_jack` | dynamic |
+| `low_impact_jack` | `face_low_impact_jack` | dynamic |
+| `balance_leg` | `face_balance_leg` | static |
+| `balance_leg_left` | `face_balance_leg_left` | static |
+| `balance_leg_right` | `face_balance_leg_right` | static |
+
+Always prefer `getAvailableExercises()` for the live plan list (premium gating can differ by plan).
+
+## Aliases
+
+SDK resolves legacy → canonical before lookup:
+
+| Alias | Resolves to |
+|---|---|
+| `face_squat` | `squat` |
+| `face_pushup` | `push_up` |
+| `face_plank` | `plank` |
+| `face_lunge` | `lunge` |
+| `face_jumping_jack` | `jumping_jack` |
+| `face_low_impact_jack` | `low_impact_jack` |
+| `face_balance_leg` | `balance_leg` |
+| `face_balance_leg_left` | `balance_leg_left` |
+| `face_balance_leg_right` | `balance_leg_right` |
+| `jump` | `air_time_jump` |
+
+Unknown id → `error` / throw with code `invalid_exercise`.
+
+## Custom: jump_analysis & air_time_jump
+
+Shipped in the **engine bundle** (≥ 1.2.0), not the movement manifest. Require full-engine like any exercise.
+
+| Id | Height method | Required options |
+|---|---|---|
+| `jump_analysis` | cm/pixel from athlete height | `userHeightCm` (> 0) |
+| `air_time_jump` | physics \(h = g·t²/8\) | none |
+
+Missing height on `jump_analysis` → `jump_analysis_missing_height`.
+
+### Session flow
+
+1. **Placement** — joints inside the padding box; `onPosture` hints (`direction`: `in-frame`, `face-camera`, `profile-camera`).
+2. **Countdown** — then `posture.ready === true`.
+3. **Measuring** — short warm-up, then jump detection.
+
+### Jump events
+
+| Typed callback | Classic `type` | Notes |
+|---|---|---|
+| `onJumpCalibration` | `jump_calibration` | `jump_analysis` only — `cmPerPixel`, `baselineY` |
+| `onJumpStarted` | `jump_started` | Push-off detected |
+| `onJumpHeight` | `jump_height` | Live (`measuring`) then `final` |
+| `onJumpDiscarded` | `jump_discarded` | `reason` + `userMessage` |
+| `onJumpResult` | `jump_result` | Completed jump N — `jumpHeightCm`, optional `airTimeMs` |
+| `onJumpSummary` | `jump_summary` | Running totals + `jumps[]` |
+
+```tsx
+usePoseTracker({
+  onJumpResult: (e) => console.log(e.jumpNumber, e.jumpHeightCm),
+  onJumpSummary: (e) => console.log(e.totalJumps, e.maxJumpHeight),
+  onJumpDiscarded: (e) => console.warn(e.reason, e.userMessage),
+});
+```
+
+## Core exercise streams
+
+During an FSM session (always, not feature-flagged):
+
+- `onCounter` — `count` + optional `formScore` (`score`, `average`, `grade` A–F)
+- `onPosture` — placement readiness
+- `onFormScore` — convenience stream (prefer nested `onCounter.formScore` for the counted rep)
+- `onExerciseSummary` — after `stopExercise()` / session end
+
+Opt-in (paid + flags): `angles`, `recommendations`, `progression`, keypoints-during-exercise — see [Features & plans](/reference/features-plans).
+
+## Related
+
+- [API key](/api-key) — getting into full-engine
+- [Events catalog](/reference/events)
+- [WebViewPoseView](/reference/webview-pose-view) — `drawPlacementBox`

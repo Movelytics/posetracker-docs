@@ -53,6 +53,8 @@ export function App() {
 | `position` | `'front'` | `'front'` \| `'back'` |
 | `showWatermark` | plan-derived | Shown for keyless / free; hidden for paid |
 
+Full table: [WebViewPoseView](/reference/webview-pose-view).
+
 ## More typed callbacks
 
 Available on `usePoseTracker({ ... })` when the paid engine is active (API key):
@@ -63,6 +65,8 @@ Available on `usePoseTracker({ ... })` when the paid engine is active (API key):
 - Jump events (`onJumpResult`, …)
 
 Without a key, business events are not emitted — only keypoints (and init / error / quality signals).
+
+Full catalog (shapes + error codes): [Events](/reference/events).
 
 ## Classic `onMessage` (optional)
 
@@ -82,4 +86,4 @@ Prefer typed callbacks for new apps.
 
 ## Next
 
-[Optional API key + exercise](/api-key) · [Quickstart](/quickstart)
+[Optional API key + exercise](/api-key) · [Events catalog](/reference/events) · [Quickstart](/quickstart)

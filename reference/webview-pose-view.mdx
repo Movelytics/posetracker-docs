@@ -1,0 +1,77 @@
+---
+title: "WebViewPoseView"
+description: "Full props table for the camera / warm-up WebView surface."
+---
+
+`WebViewPoseView` mounts the MoveNet WebView page: boot UI, camera (`getUserMedia` when `coldStart` is `full`), skeleton overlay, and pose streaming.
+
+Must be used under `PoseTrackerProvider`. Peer: `react-native-webview`.
+
+```tsx
+<WebViewPoseView
+  style={{ flex: 1 }}
+  drawSkeleton
+  loadingText="AI Loading"
+  coldStart="full"
+/>
+```
+
+## Props
+
+| Prop | Type | Default | Notes |
+|---|---|---|---|
+| `style` | `StyleProp<ViewStyle>` | — | RN layout (typically `{ flex: 1 }` on the camera screen). |
+| `position` | `'front' \| 'back'` | `'front'` | Mapped to `getUserMedia` `facingMode` (`user` / `environment`). |
+| `drawSkeleton` | `boolean` | `true` | In-page skeleton overlay (WebView `skeleton=true\|false`). Pass `false` if you draw from `onKeypoints`. |
+| `drawPlacementBox` | `boolean` | `true` | Placement guide while `posture.ready === false` (WebView `postureBox`). RN sibling overlay. |
+| `placementPaddingPercent` | `number` | `10` | Inset % on each edge (engine posture padding parity). |
+| `coldStart` | `'basic' \| 'full'` | `'full'` | `full` = open camera after warm-up (camera screen). `basic` = model only — lobby / hidden warmer, **no** permission. |
+| `loadingText` | `string` | `"AI Loading"` | Branded boot label (WebView `loading_message`). Technical progress goes to `initialization` events, not this UI. |
+| `showWatermark` | `boolean` | plan-derived | Omit for automatic: shown keyless/`free`; hidden paid. Always off for `coldStart: 'basic'`. |
+| `skeletonDef` | `SkeletonDefinition \| null` | PoseTracker navy+gold | Inline overlay theme. Takes precedence over `skeletonUuid`. |
+| `skeletonUuid` | `string \| null` | — | Strapi skeleton `api_uuid` (WebView `?skeleton=<uuid>`). Fetched via SDK API. Ignored if `skeletonDef` is set. |
+| `onPose` | `(pose, stats) => void` | — | Low-level pose + `{ inferenceTimeMs, timestampMs }` from the WebView backend. Prefer `usePoseTracker({ onKeypoints })` for app UI. |
+| `children` | `ReactNode` | — | Rendered as siblings over the WebView (HUD, CTAs). |
+
+## Defaults that matter
+
+| Use case | Recommended props |
+|---|---|
+| Camera screen | omit `coldStart` (→ `full`), `drawSkeleton` |
+| Lobby warmer (1×1) | `coldStart="basic"`, hide with opacity / size |
+| Custom brand overlay | `drawSkeleton={false}` + draw from `onKeypoints` |
+| Custom skeleton theme | `skeletonUuid="…"` or `skeletonDef={{ … }}` |
+
+## SkeletonDefinition (shape)
+
+When using `skeletonDef`, fields match the Strapi / Front default:
+
+| Field | Notes |
+|---|---|
+| `keypoints` | Joint names to draw |
+| `keypoint_lines` | Pairs like `"left_hip\|\|left_knee"` |
+| `circles` | `circleFillColor`, `circleStrokeColor`, `strokeWidth`, `radius` |
+| `lines` | `lineStrokeColor`, `strokeWidth` |
+| `keypoint_angles` / `angles` | Optional angle labels |
+
+Default palette: navy `#010A73` + gold `#FFC300`.
+
+## Boot UI & watermark
+
+Until the live camera surface is ready (`coldStart: 'full'`), the page shows a branded cover (logo + spinner + `loadingText`). The yellow `#hud` FPS overlay is **off by default** (internal debug).
+
+Watermark (live overlay, bottom-right):
+
+| Plan | Watermark |
+|---|---|
+| No API key | Shown |
+| `free` | Shown |
+| Paid (`developer`, `company`, `enterprise`, …) | Hidden |
+
+Override with `showWatermark`. Plan upgrades after `configure()` update the mark without remounting.
+
+## Related
+
+- [Permissions](/permissions) — host must request camera before `coldStart="full"`
+- [Preload lifecycle](/advanced/preload) — hidden `basic` warmer pattern
+- [Provider & client](/reference/provider-client)

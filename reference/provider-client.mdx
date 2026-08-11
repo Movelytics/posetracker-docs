@@ -1,0 +1,156 @@
+---
+title: "Provider & client"
+description: "PoseTrackerProvider props, client options, and usePoseTracker / PoseTrackerClient methods."
+---
+
+Canonical API from the **offline** package (`@pose-tracker/react-native-pose-estimation`). The **light** package shares the same surface; light-only options are marked below.
+
+See also: [WebViewPoseView](/reference/webview-pose-view) · [Exercises](/reference/exercises) · [Events](/reference/events) · [Features & plans](/reference/features-plans)
+
+## PoseTrackerProvider
+
+```tsx
+<PoseTrackerProvider
+  apiToken="ptk_…"           // optional — omit for free keypoints-only
+  autoPreload={false}        // default false — mount does NOT load MoveNet
+  options={{ /* PoseTrackerClientOptions */ }}
+>
+  {children}
+</PoseTrackerProvider>
+```
+
+| Prop | Type | Default | Notes |
+|---|---|---|---|
+| `apiToken` | `string` | — | Optional. Without a token → `keypoints-only`. With a valid key → handshake + remote movement engine. |
+| `autoPreload` | `boolean` | `false` | If `true`, calls `preload()` on mount (**basic** cold-start — no camera). |
+| `options` | `PoseTrackerClientOptions` | `{}` | See [options](#options). |
+| `children` | `ReactNode` | — | Required. |
+
+## Options
+
+`PoseTrackerClientOptions` extends handshake `ConfigureOptions` plus runtime knobs.
+
+### Shared (offline + light)
+
+| Option | Type | Default | Notes |
+|---|---|---|---|
+| `features` | `PoseTrackerFeatures` | all `false` | `angles`, `recommendations`, `progression`, `keypoints` (during exercise), `minGrade`. See [Features & plans](/reference/features-plans). |
+| `qualityChoice` | `'AdaptiveChoice' \| QualityProfileId` | `'AdaptiveChoice'` | Pin: `prime` \| `pro` \| `lite` \| `ultralite` \| `basic`. |
+| `capturePriority` | `'performance' \| 'quality'` | `'performance'` | FPS floor vs sharp preview. See [Adaptive quality](/advanced/adaptive-quality). |
+| `baseUrl` | `string` | PoseTracker Strapi host | Override for staging / self-hosted handshake. |
+| `locale` | `string` | — | Localized hints / recommendations from the engine. |
+| `poseModelProfile` | `'UltraLite' \| 'Lite' \| 'Pro' \| 'Prime' \| 'AdaptiveChoice'` | `'AdaptiveChoice'` | Handshake request profile (server may resolve differently). |
+| `preferredBackend` | `'auto' \| 'webview' \| 'vision'` | `'auto'` | `auto` / `webview` = MoveNet in WebView (Expo Go OK). `vision` = Apple Vision, iOS native only, explicit opt-in. |
+| `onDiagnostic` | `(message: string) => void` | Metro/logcat logger | GL / quality / boot diagnostic lines. |
+
+### Light-only
+
+| Option | Type | Default | Notes |
+|---|---|---|---|
+| `model` | `'movenet' \| 'movenet-singlepose-lightning' \| 'lightning' \| 'blazepose' \| string` | `'movenet'` | Product Lightning URL. `blazepose` is **not wired** (clear boot error). Ignored if `modelUrl` is set. |
+| `modelUrl` | `string` | Front MoveNet JSON URL | Explicit TF.js graph-model topology; weight shards are relative neighbors. |
+| `tfjsCdnBase` | `string` | `https://cdn.jsdelivr.net/npm` | Mirror root for TF.js scripts. |
+| `tfjsVersion` | `string` | `'4.22.0'` | CDN version pin. |
+
+Offline has **no** `model` / `modelUrl` / CDN options — MoveNet + TF.js are bundled.
+
+```tsx
+// Light
+<PoseTrackerProvider
+  options={{
+    model: 'movenet',
+    // modelUrl: 'https://…/model.json',
+    // tfjsCdnBase: 'https://cdn.jsdelivr.net/npm',
+    // tfjsVersion: '4.22.0',
+    features: { angles: true, minGrade: 'B' },
+    capturePriority: 'performance',
+  }}
+/>
+```
+
+## usePoseTracker
+
+Must run under `PoseTrackerProvider`. Pass optional [typed callbacks](/reference/events); returns the context value below.
+
+```tsx
+const {
+  status,
+  mode,
+  exercises,
+  preload,
+  startExercise,
+  stopExercise,
+  configure,
+  quality,
+  client,
+} = usePoseTracker({
+  onKeypoints: (e) => {},
+  onCounter: (e) => {},
+});
+```
+
+### Context fields
+
+| Field | Type | Notes |
+|---|---|---|
+| `client` | `PoseTrackerClient` | Escape hatch; stable across renders. |
+| `status` | `'idle' \| 'configuring' \| 'downloading' \| 'warming' \| 'ready' \| 'error'` | Pipeline lifecycle. |
+| `mode` | `'keypoints-only' \| 'full-engine'` | Commercial boundary. |
+| `acceleration` | `'unknown' \| 'gpu' \| 'cpu-fallback' \| 'unavailable'` | WebGL health after warm-up. |
+| `accelerationDiagnostics` | object \| `null` | Full GPU / GL report. |
+| `quality` | `QualityState` | Active capture profile, FPS, floors. |
+| `error` | `ErrorEvent \| null` | Last error (can coexist with `ready` + keypoints-only). |
+| `manifest` | `SdkManifest \| null` | Handshake result. |
+| `exercises` | `ExerciseConfig[]` | FSM list from manifest; empty in keypoints-only. Same as `client.getAvailableExercises()`. |
+
+### Methods
+
+| Method | Signature | Notes |
+|---|---|---|
+| `preload` | `(options?: PreloadOptions) => Promise<void>` | Warm model (+ optional handshake/engine). Default `coldStart: 'basic'` — **no** camera. Alias: `warmup`. See [Preload](/advanced/preload). |
+| `warmup` | same as `preload` | Alias. |
+| `configure` | `(apiToken?: string) => Promise<boolean>` | Hot (re)config; `true` when full-engine. Does not restart the camera pipeline. |
+| `startExercise` | `(exerciseId: string, options?: StartExerciseOptions) => void` | FSM or custom jumps. Requires full-engine. |
+| `stopExercise` | `() => void` | Ends session; may emit `exercise_summary`. |
+| `estimatePose` / `processFrame` | `(frame) => Promise<Pose \| null>` | Advanced / vision-camera path. |
+| `addEventListener` | `(listener) => () => void` | Typed events. |
+| `addMessageListener` | `(listener) => () => void` | Classic WebView JSON. |
+
+### StartExerciseOptions
+
+| Field | Type | Default | Notes |
+|---|---|---|---|
+| `difficulty` | `string` | `'medium'` | Key into movement `scale_acceptance` maps. |
+| `userHeightCm` | `number` | — | **Required** for `jump_analysis`. |
+| `devicePitchDeg` | `number` | — | Jump exercises: camera tilt compensation. |
+
+```ts
+startExercise('squat', { difficulty: 'hard' });
+startExercise('jump_analysis', { userHeightCm: 178, devicePitchDeg: 5 });
+startExercise('air_time_jump');
+```
+
+## PoseTrackerClient (escape hatch)
+
+Same methods as the hook, plus:
+
+| Method | Notes |
+|---|---|---|
+| `getStatus()` / `getMode()` / `getError()` / `getManifest()` | Introspection. |
+| `getPlanType()` | `'free'`, `'developer'`, … or `null` (keyless). |
+| `getFeatures()` | Resolved feature flags. |
+| `getAvailableExercises()` | Manifest FSM list (empty outside full-engine). |
+| `getAvailableCustomExercises()` | Engine-bundle customs (`jump_analysis`, `air_time_jump`, …). |
+| `getCurrentExerciseId()` | Active session id or `null`. |
+| `getQualityState()` / `getColdStartMode()` | Quality + last preload cold-start. |
+| `fetchSkeleton(uuid)` | `GET /api/sdk/skeleton` → `SkeletonDefinition`. |
+| `dispose()` | Tear down backend, session, listeners. |
+
+```ts
+const off = client.addEventListener((event) => { /* … */ });
+const offMsg = client.addMessageListener((msg) => { /* classic */ });
+```
+
+<Info>
+Injectables (`backend`, `engineLoader`, `fileStore`, `usageTracker`) exist for tests / advanced hosts — prefer TypeScript types in the package for those.
+</Info>

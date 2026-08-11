@@ -1,0 +1,125 @@
+---
+title: "Features & plans"
+description: "Feature flags, plan gating matrix, form grades, watermark, and error messages."
+---
+
+The SDK ports WebView tracking query params with the **same plan gating and error messages** as the PoseTracker front product.
+
+## Free vs paid
+
+| | No API key | With API key |
+|---|---|---|
+| Keypoints (pose-only) | **Free** — offline package needs no network; light needs CDN/model | Same |
+| Movement engine / exercises | No | Yes (handshake + metering) |
+| Developer streams (`angles`, …) | Blocked | Paid plans only |
+
+With a key, internet is required to authenticate and meter (`POST /api/sdk/configure`, `POST /api/sdk/track` `camera_start`). Offline metered sessions refuse key-gated features (`offline_metered`); keypoints-only keeps running from cache.
+
+## Feature flags
+
+Set on the provider:
+
+```tsx
+<PoseTrackerProvider
+  apiToken="ptk_…"
+  options={{
+    features: {
+      angles: true,
+      recommendations: true,
+      progression: true,
+      keypoints: false, // keypoints DURING an exercise
+      minGrade: 'B',
+    },
+  }}
+>
+```
+
+| Flag | Default | Meaning |
+|---|---|---|
+| `angles` | `false` | Stream `angles` during exercise — paid |
+| `recommendations` | `false` | Form advice strings — paid |
+| `progression` | `false` | 0–100 within-rep progress — paid |
+| `keypoints` | `false` | Raw keypoints **during** an exercise — paid. Pose-only (no exercise) always streams. |
+| `minGrade` | — | `'A'…'D'` — only count reps at/above this grade |
+
+Not supported (MoveNet Lightning only): `blazepose`, `poseEngine`, `mediapipeModel`, `poseBackend`, `runInWorker` → `feature_not_supported`.
+
+## Plan gating matrix
+
+Plan type from handshake (`plan.plan` / `client.getPlanType()`).
+
+| Plan | angles / recommendations / progression | keypoints + exercise | Exercises |
+|---|---|---|---|
+| No key | Blocked | Blocked | No |
+| `free` | **Blocked** | **Blocked** | Yes (non-premium list) |
+| `developer`+ | OK if flags on | OK if flag on | Yes |
+
+### When gating runs
+
+1. **configure / preload** — `free` + angles/recommendations/progression → `free_plan_feature_blocked` (one-shot). Keypoints-only keeps running.
+2. **`startExercise()`** — re-check; on `free`, `features.keypoints` also blocks. Throws with the same message.
+
+### Emission filtering (during exercise)
+
+| Event | Requires |
+|---|---|
+| `angles` | `features.angles` |
+| `recommendations` | `features.recommendations` |
+| `progression` | `features.progression` |
+| `keypoints` | `features.keypoints` (outside session: always on) |
+| `counter`, `posture`, `form_score`, `exercise_summary` | Always (core streams) |
+
+## Form grades & minGrade
+
+| Grade | Score |
+|---|---|
+| A | ≥ 90 |
+| B | ≥ 80 |
+| C | ≥ 70 |
+| D | ≥ 60 |
+| F | &lt; 60 |
+
+Authoritative counted-rep grade: nested on `onCounter` → `formScore` (classic `counter.form_score`). Standalone `form_score` is convenience only.
+
+`minGrade: 'B'` counts A and B only; below-bar reps emit neither `counter` nor `form_score`.
+
+## Watermark
+
+| Plan | Watermark on live camera |
+|---|---|
+| Keyless / `free` | Shown |
+| Paid | Hidden |
+
+Override: `WebViewPoseView` `showWatermark`. Off for `coldStart: 'basic'` warmers.
+
+## WebView param → SDK map
+
+| WebView query | SDK |
+|---|---|
+| `token` | `apiToken` / `configure(apiToken)` |
+| `exercise` | `startExercise(id, options?)` |
+| `difficulty` | `startExercise(id, { difficulty })` |
+| `userHeightCm` / `devicePitchDeg` | `StartExerciseOptions` |
+| `skeleton` | `drawSkeleton` / `skeletonUuid` / `skeletonDef` |
+| `loading_message` | `loadingText` |
+| `postureBox` | `drawPlacementBox` |
+| `angles` / `recommendations` / `progression` / `keypoints` / `minGrade` | `options.features.*` |
+
+## Common error codes
+
+| Situation | `code` |
+|---|---|
+| Dev features, no token | `invalid_token` |
+| Unknown exercise | `invalid_exercise` |
+| `jump_analysis` without height | `jump_analysis_missing_height` |
+| Free + developer features | `free_plan_feature_blocked` |
+| BlazePose / MediaPipe options | `feature_not_supported` |
+| Offline + key at camera start | `offline_metered` |
+| Quota | `quota_exceeded` |
+| Revoked token | `invalid_token` (caches purged → keypoints-only) |
+
+## Related
+
+- [API key](/api-key)
+- [Exercises](/reference/exercises)
+- [Events](/reference/events)
