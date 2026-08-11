@@ -1,0 +1,76 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "PoseTracker",
+  "description": "React Native human pose estimation SDKs for iOS and Android — offline and light packages, free keypoints, optional exercise engine.",
+  "colors": {
+    "primary": "#FFC300",
+    "light": "#FFD54A",
+    "dark": "#010A73"
+  },
+  "favicon": "/favicon.svg",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "appearance": {
+    "default": "system"
+  },
+  "navigation": {
+    "pages": [
+      {
+        "group": "Get started",
+        "pages": [
+          "index",
+          "quickstart",
+          "choose-package"
+        ]
+      },
+      {
+        "group": "Integrate",
+        "pages": [
+          "permissions",
+          "keypoints",
+          "api-key"
+        ]
+      },
+      {
+        "group": "AI & agents",
+        "pages": [
+          "llms"
+        ]
+      }
+    ]
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Website",
+        "href": "https://www.posetracker.com"
+      },
+      {
+        "label": "npm",
+        "href": "https://www.npmjs.com/org/pose-tracker"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "GitHub",
+      "href": "https://github.com/Movelytics"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/Movelytics"
+    }
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "cursor"
+    ]
+  }
+}

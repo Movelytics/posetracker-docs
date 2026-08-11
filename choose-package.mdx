@@ -1,0 +1,67 @@
+---
+title: "Choose a package"
+description: "Offline vs Light — same API, different delivery of MoveNet and TF.js."
+---
+
+Two npm packages share the same product contract. They differ only in **how MoveNet / TF.js are delivered**.
+
+## Recommendation
+
+| Need | Package |
+|---|---|
+| Offline-first keypoints · no model download at boot | **Offline** |
+| Smallest install / OTA · devices are online | **Light** |
+
+## Comparison
+
+| | **Offline** | **Light** |
+|---|---|---|
+| **npm** | [`@pose-tracker/react-native-pose-estimation`](https://www.npmjs.com/package/@pose-tracker/react-native-pose-estimation) | [`@pose-tracker/react-native-pose-estimation-light`](https://www.npmjs.com/package/@pose-tracker/react-native-pose-estimation-light) |
+| **Packed tarball** | ~**9.9 MB** | ~**206 kB** (~48× smaller) |
+| **Unpacked** | ~14.7 MB | ~779 kB |
+| **MoveNet / TF.js** | Bundled in npm | CDN + model URL each WebView boot |
+| **Network for keypoints** | Not required | **Required** |
+| **Expo Go** | Yes | Yes |
+| **API surface** | Keypoints free; paid engine with API key | Same |
+
+## Install
+
+```bash
+# Offline
+npm install @pose-tracker/react-native-pose-estimation react-native-webview
+
+# Light
+npm install @pose-tracker/react-native-pose-estimation-light react-native-webview
+```
+
+## Light model URL
+
+Default MoveNet Lightning graph (weights are relative neighbors):
+
+```
+https://app.posetracker.com/scripts/tmp_model_to_remove.json
+```
+
+Optional overrides on the provider:
+
+```tsx
+<PoseTrackerProvider
+  options={{
+    model: 'movenet', // default
+    // modelUrl: 'https://…/model.json',
+  }}
+>
+```
+
+`model: 'blazepose'` is accepted for API parity but **not wired** yet.
+
+## Demos & source
+
+| | Offline | Light |
+|---|---|---|
+| SDK | [GitHub](https://github.com/Movelytics/react-native-pose-estimation) | [GitHub](https://github.com/Movelytics/react-native-pose-estimation-light) |
+| Demo | [Demo](https://github.com/Movelytics/react-native-pose-estimation-demo) | [Demo](https://github.com/Movelytics/react-native-pose-estimation-light-demo) |
+
+## Next
+
+Continue with [Quickstart](/quickstart) or [Permissions](/permissions).

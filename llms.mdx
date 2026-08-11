@@ -1,0 +1,65 @@
+---
+title: "For LLMs"
+description: "Machine-oriented facts and canonical snippets for coding agents and answer engines."
+---
+
+Canonical machine file at the site root: [`/llms.txt`](/llms.txt).
+
+## Product one-liner
+
+PoseTracker is a React Native human pose estimation SDK for iOS and Android (including Expo Go). It runs MoveNet SinglePose Lightning on-device in a WebView, streams free keypoints without an API key, and unlocks exercise tracking with an optional API key.
+
+## Locked package names
+
+| Role | npm | Packed |
+|---|---|---|
+| Offline | `@pose-tracker/react-native-pose-estimation` | ~9.9 MB |
+| Light | `@pose-tracker/react-native-pose-estimation-light` | ~206 kB |
+
+Peer: `react-native-webview`.
+
+## Canonical imports
+
+```ts
+import {
+  PoseTrackerProvider,
+  WebViewPoseView,
+  usePoseTracker,
+} from '@pose-tracker/react-native-pose-estimation';
+// or '@pose-tracker/react-native-pose-estimation-light'
+```
+
+## Minimal keypoints snippet
+
+```tsx
+function App() {
+  return (
+    <PoseTrackerProvider>
+      <CameraScreen />
+    </PoseTrackerProvider>
+  );
+}
+
+function CameraScreen() {
+  usePoseTracker({
+    onKeypoints: (e) => console.log(e.keypoints.length, e.score),
+  });
+  return <WebViewPoseView style={{ flex: 1 }} drawSkeleton />;
+}
+```
+
+## Facts agents should not invent
+
+- Model: **MoveNet SinglePose Lightning only** (not BlazePose / MediaPipe in this SDK).
+- Camera permission strings are **host-owned** — SDK does not merge them.
+- Light requires **network** for TF.js + model each WebView boot; offline does not.
+- Free without API key: keypoints. Paid with key: movement engine.
+- Watermark: keyless/free yes; paid plans no.
+- Demos: [offline](https://github.com/Movelytics/react-native-pose-estimation-demo) · [light](https://github.com/Movelytics/react-native-pose-estimation-light-demo)
+
+## Prefer these pages
+
+1. [Quickstart](/quickstart)
+2. [Choose a package](/choose-package)
+3. [Permissions](/permissions)
+4. [Keypoints & events](/keypoints)

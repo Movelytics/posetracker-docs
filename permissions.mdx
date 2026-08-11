@@ -1,0 +1,107 @@
+---
+title: "Permissions"
+description: "The host app declares and requests camera access — the SDK does not ship permission copy."
+---
+
+The SDK opens the camera via **`getUserMedia` inside `WebViewPoseView`** when `coldStart` is `full` (default on the camera screen). It does **not** ship iOS/Android permission strings — **your app must declare and request camera access**.
+
+## Responsibility split
+
+| Layer | Who | What |
+|---|---|---|
+| Usage description + manifest | **Host app** | `NSCameraUsageDescription`, Android `CAMERA`, Expo plugin text |
+| When to ask | **Host app** | Prefer on (or just before) the camera screen |
+| `getUserMedia` | **SDK** | On `<WebViewPoseView />` with `coldStart="full"` |
+| Model-only warm-up | **SDK** | `preload()` + `coldStart="basic"` — **no** permission |
+
+## Expo
+
+### Declare
+
+```json
+{
+  "expo": {
+    "ios": {
+      "infoPlist": {
+        "NSCameraUsageDescription": "Camera access is required for on-device pose estimation."
+      }
+    },
+    "android": {
+      "permissions": ["android.permission.CAMERA"]
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Camera access is required for on-device pose estimation."
+        }
+      ]
+    ]
+  }
+}
+```
+
+Use your own product wording. Rebuild after changing plugins (`npx expo prebuild` / EAS).
+
+### Request, then mount
+
+```tsx
+import { useEffect } from 'react';
+import { Text, View } from 'react-native';
+import { useCameraPermissions } from 'expo-camera';
+import { WebViewPoseView } from '@pose-tracker/react-native-pose-estimation';
+
+export function CameraScreen() {
+  const [permission, requestPermission] = useCameraPermissions();
+
+  useEffect(() => {
+    if (permission && !permission.granted && permission.canAskAgain) {
+      void requestPermission();
+    }
+  }, [permission, requestPermission]);
+
+  if (!permission?.granted) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', padding: 24 }}>
+        <Text>Camera permission is required for pose tracking.</Text>
+      </View>
+    );
+  }
+
+  return <WebViewPoseView style={{ flex: 1 }} drawSkeleton />;
+}
+```
+
+## Bare React Native
+
+**iOS** — `Info.plist`:
+
+```xml
+<key>NSCameraUsageDescription</key>
+<string>Camera access is required for on-device pose estimation.</string>
+```
+
+**Android** — `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.CAMERA" />
+```
+
+Request at runtime (API 23+) before mounting `WebViewPoseView`.
+
+## Cold-start tip
+
+| Mode | API | Camera permission |
+|---|---|---|
+| **basic** | `preload()` / `coldStart="basic"` | No — model / WebGL only |
+| **full** | `preload({ coldStart: 'full' })` | Yes — when user expects camera |
+
+Lobby warmer: `<WebViewPoseView coldStart="basic" />`. Camera screen: default `full`.
+
+## Checklist
+
+1. Declare iOS usage string (+ Expo plugin text).
+2. Declare Android `CAMERA`.
+3. Request permission on the camera screen.
+4. Mount `WebViewPoseView` only when granted (or handle denial UX).
+5. Never call `preload({ coldStart: 'full' })` outside a camera context the user expects.

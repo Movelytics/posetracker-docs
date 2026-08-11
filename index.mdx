@@ -1,0 +1,45 @@
+---
+title: "Introduction"
+description: "PoseTracker React Native SDKs — human pose estimation for iOS and Android in seconds."
+---
+
+**PoseTracker** is a React Native human pose estimation SDK for **iOS and Android** (including **Expo Go**). It runs **MoveNet SinglePose Lightning** (17 COCO keypoints) in a WebView, streams **free keypoints without an API key**, and unlocks exercise intelligence (reps, form score, jumps) with an optional API key.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="bolt" href="/quickstart">
+    Install, wrap with Provider, mount WebViewPoseView — keypoints in seconds.
+  </Card>
+  <Card title="Choose a package" icon="scale-balanced" href="/choose-package">
+    Offline (~9.9 MB) vs Light (~206 kB) — pick by install size vs network.
+  </Card>
+</CardGroup>
+
+## What you get
+
+| | |
+|---|---|
+| **Platforms** | iOS + Android · bare RN and Expo / Expo Go |
+| **Model** | MoveNet SinglePose Lightning · 17 keypoints |
+| **Free** | Keypoints without an API key |
+| **Paid (optional)** | Remote movement engine: squat / push-up / jumps, `counter` + form score |
+| **Peer** | `react-native-webview` (required) |
+
+## Two packages, one API
+
+| Package | npm | Packed size | Network for keypoints |
+|---|---|---|---|
+| **Offline** | [`@pose-tracker/react-native-pose-estimation`](https://www.npmjs.com/package/@pose-tracker/react-native-pose-estimation) | ~9.9 MB | Not required |
+| **Light** | [`@pose-tracker/react-native-pose-estimation-light`](https://www.npmjs.com/package/@pose-tracker/react-native-pose-estimation-light) | ~206 kB | Required (TF.js + model) |
+
+Same exports: `PoseTrackerProvider`, `WebViewPoseView`, `usePoseTracker`.
+
+## Demo apps
+
+- [Offline demo](https://github.com/Movelytics/react-native-pose-estimation-demo)
+- [Light demo](https://github.com/Movelytics/react-native-pose-estimation-light-demo)
+
+## Next
+
+1. [Quickstart](/quickstart) — copy-paste keypoints
+2. [Permissions](/permissions) — host app owns camera strings
+3. [For LLMs](/llms) — machine-oriented facts

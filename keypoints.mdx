@@ -1,0 +1,85 @@
+---
+title: "Keypoints & events"
+description: "Listen to typed keypoints and other pose events with usePoseTracker."
+---
+
+Use `usePoseTracker` inside `PoseTrackerProvider` to subscribe to typed events. Without an API key you get **keypoints-only** mode.
+
+## Keypoints (free)
+
+```tsx
+import {
+  PoseTrackerProvider,
+  WebViewPoseView,
+  usePoseTracker,
+} from '@pose-tracker/react-native-pose-estimation';
+
+function CameraScreen() {
+  usePoseTracker({
+    onKeypoints: (e) => {
+      // e.keypoints: 17 COCO joints · e.score · e.timestampMs
+      console.log(e.keypoints.length, e.score);
+    },
+  });
+
+  return <WebViewPoseView style={{ flex: 1 }} drawSkeleton />;
+}
+
+export function App() {
+  return (
+    <PoseTrackerProvider>
+      <CameraScreen />
+    </PoseTrackerProvider>
+  );
+}
+```
+
+`KeypointsEvent` shape:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `type` | `'keypoints'` | Event kind |
+| `keypoints` | `Keypoint[]` | 17 joints (name, x, y, score, …) |
+| `score` | `number` | Mean pose confidence |
+| `timestampMs` | `number` | Frame time |
+
+## Useful `WebViewPoseView` props
+
+| Prop | Default | Notes |
+|---|---|---|
+| `drawSkeleton` | `true` | Overlay inside the WebView |
+| `coldStart` | `'full'` | `'basic'` = model only (no camera) |
+| `loadingText` | `"AI Loading"` | Boot overlay label |
+| `position` | `'front'` | `'front'` \| `'back'` |
+| `showWatermark` | plan-derived | Shown for keyless / free; hidden for paid |
+
+## More typed callbacks
+
+Available on `usePoseTracker({ ... })` when the paid engine is active (API key):
+
+- `onCounter` — `count`, optional `formScore` (`score`, `average`, `grade`)
+- `onAngles`, `onPosture`, `onProgression`, `onRecommendations`
+- `onFormScore`, `onExerciseSummary`
+- Jump events (`onJumpResult`, …)
+
+Without a key, business events are not emitted — only keypoints (and init / error / quality signals).
+
+## Classic `onMessage` (optional)
+
+For WebView parity with snake_case payloads (`current_count`, `form_score`):
+
+```tsx
+usePoseTracker({
+  onMessage: (msg) => {
+    if (msg.type === 'counter') {
+      // msg.current_count · msg.form_score?.grade
+    }
+  },
+});
+```
+
+Prefer typed callbacks for new apps.
+
+## Next
+
+[Optional API key + exercise](/api-key) · [Quickstart](/quickstart)

@@ -1,0 +1,146 @@
+---
+title: "Quickstart"
+description: "Expo + WebView keypoints in seconds — no API key required."
+---
+
+Get **17 keypoints per frame** with Expo (or bare React Native), `react-native-webview`, and no API key.
+
+<Info>
+Keypoints-only mode is free. The **offline** package works without network; **light** needs network to load TF.js + MoveNet. See [Choose a package](/choose-package).
+</Info>
+
+## 1. Install
+
+<Tabs>
+  <Tab title="Offline (bundled)">
+```bash
+npm install @pose-tracker/react-native-pose-estimation react-native-webview
+npx expo install react-native-webview expo-camera
+```
+  </Tab>
+  <Tab title="Light (CDN)">
+```bash
+npm install @pose-tracker/react-native-pose-estimation-light react-native-webview
+npx expo install react-native-webview expo-camera
+```
+  </Tab>
+</Tabs>
+
+`expo-camera` is only for the **permission API** — PoseTracker still captures inside its WebView.
+
+## 2. Camera permission (host app)
+
+Declare and request camera access in your app before mounting the camera screen. Minimal Expo snippet — full guide: [Permissions](/permissions).
+
+```json
+{
+  "expo": {
+    "ios": {
+      "infoPlist": {
+        "NSCameraUsageDescription": "Camera access is required for on-device pose estimation."
+      }
+    },
+    "android": {
+      "permissions": ["android.permission.CAMERA"]
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Camera access is required for on-device pose estimation."
+        }
+      ]
+    ]
+  }
+}
+```
+
+## 3. Provider + WebView + keypoints
+
+<Tabs>
+  <Tab title="Offline">
+```tsx
+import {
+  PoseTrackerProvider,
+  WebViewPoseView,
+  usePoseTracker,
+} from '@pose-tracker/react-native-pose-estimation';
+
+function App() {
+  return (
+    <PoseTrackerProvider>
+      <CameraScreen />
+    </PoseTrackerProvider>
+  );
+}
+
+function CameraScreen() {
+  usePoseTracker({
+    onKeypoints: (e) => {
+      // 17 keypoints every frame — no API key
+      console.log(e.keypoints.length, e.score);
+    },
+  });
+
+  return (
+    <WebViewPoseView
+      style={{ flex: 1 }}
+      drawSkeleton
+      loadingText="AI Loading"
+    />
+  );
+}
+```
+  </Tab>
+  <Tab title="Light">
+```tsx
+import {
+  PoseTrackerProvider,
+  WebViewPoseView,
+  usePoseTracker,
+} from '@pose-tracker/react-native-pose-estimation-light';
+
+function App() {
+  return (
+    <PoseTrackerProvider options={{ model: 'movenet' }}>
+      <CameraScreen />
+    </PoseTrackerProvider>
+  );
+}
+
+function CameraScreen() {
+  usePoseTracker({
+    onKeypoints: (e) => {
+      console.log(e.keypoints.length, e.score);
+    },
+  });
+
+  return (
+    <WebViewPoseView
+      style={{ flex: 1 }}
+      drawSkeleton
+      loadingText="AI Loading"
+      coldStart="full"
+    />
+  );
+}
+```
+  </Tab>
+</Tabs>
+
+## What just happened
+
+1. `PoseTrackerProvider` creates the client (keypoints-only without `apiToken`).
+2. `WebViewPoseView` boots MoveNet in a WebView and opens the camera (`coldStart` defaults to `full` on the camera screen).
+3. `usePoseTracker({ onKeypoints })` receives typed `KeypointsEvent` frames (`keypoints`, `score`, `timestampMs`).
+
+## Try a demo
+
+- [Offline demo](https://github.com/Movelytics/react-native-pose-estimation-demo)
+- [Light demo](https://github.com/Movelytics/react-native-pose-estimation-light-demo)
+
+## Next
+
+- [Listen to events](/keypoints)
+- [Optional API key + exercise](/api-key)
+- [For LLMs](/llms)

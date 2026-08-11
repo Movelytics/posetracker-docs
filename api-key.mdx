@@ -1,0 +1,75 @@
+---
+title: "API key & exercises"
+description: "Optional paid movement engine — reps, form score, jumps. Keypoints stay free without a key."
+---
+
+Keypoints work **without** an API key. Pass `apiToken` when you want the remote movement engine (exercises, counter, form score, jumps, plan-gated features).
+
+<Tip>
+This page is optional. Most integrators start with [Quickstart](/quickstart) keypoints only.
+</Tip>
+
+## Provider with token
+
+```tsx
+import {
+  PoseTrackerProvider,
+  WebViewPoseView,
+  usePoseTracker,
+} from '@pose-tracker/react-native-pose-estimation';
+
+function App() {
+  return (
+    <PoseTrackerProvider
+      apiToken="YOUR_API_KEY"
+      options={{ features: { angles: true, progression: true, minGrade: 'B' } }}
+    >
+      <CameraScreen />
+    </PoseTrackerProvider>
+  );
+}
+
+function CameraScreen() {
+  const { preload, startExercise } = usePoseTracker({
+    onCounter: (e) => {
+      console.log(e.count, e.formScore?.grade);
+    },
+  });
+
+  // Lobby: model warm-up only (no camera permission)
+  // await preload();
+  // Camera screen: start an exercise when ready
+  // startExercise('squat');
+
+  return (
+    <WebViewPoseView
+      style={{ flex: 1 }}
+      drawSkeleton
+      skeletonUuid="OPTIONAL_CUSTOM_SKELETON_UUID"
+    />
+  );
+}
+```
+
+Same pattern works with `@pose-tracker/react-native-pose-estimation-light`.
+
+## Conceptual web parity
+
+```
+https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=squat&skeleton=true
+```
+
+## Modes
+
+| Mode | When | Events |
+|---|---|---|
+| `keypoints-only` | No valid API key / session | Keypoints |
+| `full-engine` | Handshake succeeded + engine loaded | Counter, form score, angles, … |
+
+## Watermark
+
+Shown for keyless and free plans. Hidden for paid plans (`developer`, `company`, `enterprise`, …). Override with `showWatermark` on `WebViewPoseView` if needed.
+
+## Get a key
+
+Product site: [posetracker.com](https://www.posetracker.com)
