@@ -131,8 +131,10 @@ function CameraScreen() {
 ## What just happened
 
 1. `PoseTrackerProvider` creates the client (keypoints-only without `apiToken`).
-2. `WebViewPoseView` boots MoveNet in a WebView and opens the camera (`coldStart` defaults to `full` on the camera screen).
+2. `WebViewPoseView` boots MoveNet in a WebView and opens the **camera** by default (`coldStart` defaults to `full` on the camera screen).
 3. `usePoseTracker({ onKeypoints })` receives typed `KeypointsEvent` frames (`keypoints`, `score`, `timestampMs`).
+
+Uploaded **video** / **image** instead of the webcam: see [Media sources](/media-sources).
 
 ## Try a demo
 
@@ -142,6 +144,7 @@ function CameraScreen() {
 ## Next
 
 - [Listen to events](/keypoints)
+- [Media sources](/media-sources) (camera / video / image)
 - [Optional API key + exercise](/api-key)
 - [Provider & client](/reference/provider-client) · [WebViewPoseView](/reference/webview-pose-view)
 - [Preload lifecycle](/advanced/preload)

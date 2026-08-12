@@ -52,6 +52,7 @@
         "group": "Integrate",
         "pages": [
           "permissions",
+          "media-sources",
           "keypoints",
           "api-key"
         ]

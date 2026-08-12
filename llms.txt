@@ -11,7 +11,9 @@
 - Offline npm: @pose-tracker/react-native-pose-estimation@0.2.0 (~9.9 MB packed)
 - Light npm: @pose-tracker/react-native-pose-estimation-light@0.2.0 (~206 kB packed)
 - Web npm: @pose-tracker/pose-estimation-web@0.2.0 · @pose-tracker/pose-estimation-web-react@0.2.0
-- Input sources (all SDKs): camera (default) · uploaded video · still image
+- Input sources (all SDKs): camera (default) · uploaded video · still image — see /media-sources
+- RN media props: source, sourceUri, sourceBase64, sourceMime (host file picker; no SDK picker)
+- Web media API: PoseSource + setSource / analyze / getSource; React PoseCamera source + sourceFile / sourceUrl
 - Free without API key: keypoints-only (offline package works offline; light needs network for TF.js/model)
 - With API key: remote movement engine (exercises, counter + formScore grades, jumps, angles on paid plans)
 - Peer dependency: react-native-webview (>=13.0.0)
@@ -42,6 +44,7 @@
 
 ### Integrate
 - /permissions — Host-owned camera permission setup
+- /media-sources — Camera / video / image inputs (RN + web, v0.2.0)
 - /keypoints — usePoseTracker onKeypoints (short)
 - /api-key — Optional paid exercise engine (short)
 
@@ -115,11 +118,13 @@ model ('movenet' default; blazepose via CDN pose-detection), modelUrl, tfjsCdnBa
 
 ## WebViewPoseView props
 
-style, position ('front'|'back'), drawSkeleton, drawPlacementBox, placementPaddingPercent, coldStart ('basic'|'full'), loadingText, showWatermark, skeletonDef, skeletonUuid, onPose, children
+style, position ('front'|'back'), source ('camera'|'video'|'image'), sourceUri, sourceBase64, sourceMime, drawSkeleton, drawPlacementBox, placementPaddingPercent, coldStart ('basic'|'full'), loadingText, showWatermark, skeletonDef, skeletonUuid, onPose, children
 
 ## Client methods
 
 preload/warmup({ coldStart }), configure(apiToken?), startExercise(id, { difficulty, userHeightCm, devicePitchDeg }), stopExercise(), getAvailableExercises(), getAvailableCustomExercises(), getPlanType(), addEventListener, addMessageListener, dispose()
+
+Web also: setSource, analyze, getSource (see /media-sources · /web-sdks)
 
 ## Exercises (typical)
 

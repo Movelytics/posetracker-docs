@@ -1,0 +1,166 @@
+---
+title: "Media sources"
+description: "Camera, uploaded video, and still image inputs for React Native and Web SDKs (v0.2.0)."
+---
+
+# Media sources
+
+PoseTracker accepts three input modes on **all four** npm packages (v**0.2.0**).
+Default is live **camera** so quickstarts stay unchanged.
+
+| Mode | What you pass | Keypoints |
+|---|---|---|
+| **camera** (default) | Nothing extra (optional facing / `position`) | Continuous |
+| **video** | Host file / URL / element | Continuous while playing |
+| **image** | Host still file / URL / element | **One shot**; re-run with `analyze()` (web) |
+
+<Info>
+React Native: the **host app** must pick the file (`expo-image-picker`, document
+picker, …). The SDK does not ship a picker.
+</Info>
+
+## React Native
+
+Works the same on offline and light:
+
+```tsx
+<WebViewPoseView style={{ flex: 1 }} drawSkeleton />
+{/* source defaults to "camera" */}
+
+<WebViewPoseView source="image" sourceUri={fileUri} style={{ flex: 1 }} />
+<WebViewPoseView source="video" sourceUri={fileUri} style={{ flex: 1 }} />
+
+<WebViewPoseView
+  source="image"
+  sourceBase64={b64}
+  sourceMime="image/jpeg"
+  style={{ flex: 1 }}
+/>
+```
+
+### Props
+
+| Prop | Type | Default | Notes |
+|---|---|---|---|
+| `source` | `'camera' \| 'video' \| 'image'` | `'camera'` | Input mode |
+| `sourceUri` | `string` | — | `file://`, `content://`, `https://`, or `data:` |
+| `sourceBase64` | `string` | — | Raw base64 (no `data:` prefix) |
+| `sourceMime` | `string` | `image/jpeg` or `video/mp4` | With `sourceBase64` |
+
+Prop updates inject `window.__PT_SET_SOURCE` into the WebView. Still-image
+re-run uses page runtime `__PT_ANALYZE` (no typed RN `analyze()` yet).
+
+### Host checklist
+
+1. For **camera**: declare + request permission ([Permissions](/permissions)).
+2. For **video / image**: pick a file in the host app, then pass `sourceUri` or `sourceBase64`.
+3. Prefer a cache `file://` over Android `content://` when the WebView cannot read the URI.
+4. Remote `https` media follows WebView / CORS rules.
+
+Full prop table: [WebViewPoseView](/reference/webview-pose-view).
+
+## Web (vanilla)
+
+```ts
+import { createPoseTracker } from '@pose-tracker/pose-estimation-web';
+
+const pt = createPoseTracker({ model: 'movenet', drawSkeleton: true });
+pt.mount('#root');
+await pt.start(); // webcam
+
+await pt.setSource({ type: 'video', src: videoFile }); // File | Blob | URL | HTMLVideoElement
+await pt.start();
+
+await pt.setSource({ type: 'image', src: imageFile });
+await pt.start();       // single shot
+await pt.analyze();     // same still again
+```
+
+### Script tag
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@pose-tracker/pose-estimation-web@0.2.0/dist/pose-tracker.global.js"></script>
+<script>
+  const pt = PoseTracker.createPoseTracker({ model: 'movenet', drawSkeleton: true });
+  pt.mount('#root');
+  pt.start(); // camera default
+  // await pt.setSource({ type: 'image', src: file }); await pt.start(); await pt.analyze();
+</script>
+```
+
+### `PoseSource`
+
+| Source | Shape |
+|---|---|
+| Camera | `{ type: 'camera', facingMode?: 'user' \| 'environment' }` |
+| Video | `{ type: 'video', src, autoplay?, loop?, muted? }` — defaults: autoplay/loop/muted `true` |
+| Image | `{ type: 'image', src }` — `src`: string \| File \| Blob \| HTMLImageElement \| ImageBitmap |
+
+Also: `createPoseTracker({ source: 'video', sourceFile })` / `sourceUrl` via `normalizePoseSource`.
+
+| Method | Role |
+|---|---|
+| `setSource(source, extras?)` | Switch input; restarts when previously running |
+| `analyze()` | Re-run still image |
+| `getSource()` | Active `PoseSource` |
+
+Prefer local **File / Blob** over remote URLs (CORS). See [Web SDKs](/web-sdks).
+
+## Web (React)
+
+```tsx
+import {
+  PoseTrackerProvider,
+  PoseCamera,
+  usePoseTracker,
+} from '@pose-tracker/pose-estimation-web-react';
+
+function Screen({ file }: { file?: File }) {
+  const { analyze } = usePoseTracker({
+    onKeypoints: (e) => console.log(e.keypoints.length),
+  });
+
+  return (
+    <>
+      <PoseCamera
+        source={file ? 'image' : 'camera'}
+        sourceFile={file}
+        style={{ height: 480 }}
+      />
+      {file ? (
+        <button type="button" onClick={() => void analyze()}>
+          Re-analyze
+        </button>
+      ) : null}
+    </>
+  );
+}
+```
+
+`PoseCamera` props: `source`, `sourceUrl`, `sourceFile` (plus the usual
+skeleton / watermark / `coldStart` props).
+
+## Events by mode
+
+| Mode | RN / Web keypoints | Notes |
+|---|---|---|
+| camera | Continuous | Needs camera permission (RN host + browser gUM) |
+| video | Continuous while playing | No camera permission |
+| image | One shot | Web: `analyze()` · RN: `__PT_ANALYZE` / new URI |
+
+## Packages (npm 0.2.0)
+
+| Package | Surface |
+|---|---|
+| `@pose-tracker/react-native-pose-estimation` | `WebViewPoseView` props |
+| `@pose-tracker/react-native-pose-estimation-light` | Same props |
+| `@pose-tracker/pose-estimation-web` | `PoseSource`, `setSource`, `analyze` |
+| `@pose-tracker/pose-estimation-web-react` | `PoseCamera` + hook `analyze` / `setSource` |
+
+## Next
+
+- [Quickstart](/quickstart) (camera default)
+- [Web SDKs](/web-sdks)
+- [WebViewPoseView](/reference/webview-pose-view)
+- [Permissions](/permissions)
