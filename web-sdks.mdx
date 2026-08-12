@@ -14,10 +14,12 @@ remote `modelUrl` (no MoveNet weights in npm). Product line: **pose-estimation-w
 | [`@pose-tracker/pose-estimation-web`](https://www.npmjs.com/package/@pose-tracker/pose-estimation-web) | Vanilla core (ESM / CJS / script tag) |
 | [`@pose-tracker/pose-estimation-web-react`](https://www.npmjs.com/package/@pose-tracker/pose-estimation-web-react) | Thin React wrapper (`PoseTrackerProvider`, `PoseCamera`, `usePoseTracker`) |
 
-> **Status:** local monorepo `posetracker-web-sdk/` — npm publish TBD (v0.1.0 ready).
+> **Status:** published on npm as **v0.1.0**.
+> Source: [pose-estimation-web](https://github.com/Movelytics/pose-estimation-web) ·
+> [pose-estimation-web-react](https://github.com/Movelytics/pose-estimation-web-react).
 > Parity target: RN package `@pose-tracker/react-native-pose-estimation-light`.
 
-## Install (local / after publish)
+## Install (npm)
 
 ```bash
 npm install @pose-tracker/pose-estimation-web @tensorflow/tfjs
@@ -25,6 +27,20 @@ npm install @pose-tracker/pose-estimation-web @tensorflow/tfjs
 npm install @tensorflow-models/pose-detection
 # React:
 npm install @pose-tracker/pose-estimation-web-react react react-dom
+```
+
+## Script tag (CDN)
+
+Load **TensorFlow.js first**, then the PoseTracker IIFE. Global: `window.PoseTracker`.
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@pose-tracker/pose-estimation-web@0.1.0/dist/pose-tracker.global.js"></script>
+<script>
+  const pt = PoseTracker.createPoseTracker({ model: 'movenet', drawSkeleton: true });
+  pt.mount('#root');
+  pt.start();
+</script>
 ```
 
 Default MoveNet URL:
