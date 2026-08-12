@@ -1,0 +1,63 @@
+---
+title: "Web SDKs"
+description: "Browser pose estimation — vanilla JS + React (online TF.js, no bundled weights)."
+---
+
+# Web SDKs
+
+PoseTracker ships **browser** packages alongside the React Native offline/light
+SDKs. Web packages always use the **light** delivery model: TensorFlow.js + a
+remote `modelUrl` (no MoveNet weights in npm). Product line: **pose-estimation-web**.
+
+| Package | Role |
+|---|---|
+| [`@pose-tracker/pose-estimation-web`](https://www.npmjs.com/package/@pose-tracker/pose-estimation-web) | Vanilla core (ESM / CJS / script tag) |
+| [`@pose-tracker/pose-estimation-web-react`](https://www.npmjs.com/package/@pose-tracker/pose-estimation-web-react) | Thin React wrapper (`PoseTrackerProvider`, `PoseCamera`, `usePoseTracker`) |
+
+> **Status:** local monorepo `posetracker-web-sdk/` — npm publish TBD (v0.1.0 ready).
+> Parity target: RN package `@pose-tracker/react-native-pose-estimation-light`.
+
+## Install (local / after publish)
+
+```bash
+npm install @pose-tracker/pose-estimation-web @tensorflow/tfjs
+# React:
+npm install @pose-tracker/pose-estimation-web-react react react-dom
+```
+
+Default MoveNet URL:
+`https://app.posetracker.com/scripts/tmp_model_to_remove.json`
+
+## What works (V1)
+
+- MoveNet Lightning keypoints (`getUserMedia` + canvas overlay)
+- Optional BlazePose via `@tensorflow-models/pose-detection`
+- Custom `modelUrl` (TF.js graph)
+- Free keypoints without API key; plan-gated watermark
+- `preload` / `warmup` with `coldStart: 'basic' | 'full'`
+- `configure(apiToken)` handshake + remote engine download + sealed cache
+- `startExercise` / `stopExercise` + counter / posture / angles / jumps events
+- Features gating (`angles`, `recommendations`, `progression`, `keypoints`, `minGrade`)
+- Skeleton overlay via `skeletonDef` / `skeletonUuid`
+- Placement box during posture guidance
+
+## Try the examples
+
+```bash
+cd posetracker-web-sdk && npm install && npm run build
+npm run example:vanilla   # http://localhost:5174
+npm run example:react     # http://localhost:5173
+# Exercises: append ?apiToken=YOUR_KEY
+```
+
+## Quick links
+
+- Source: workspace `posetracker-web-sdk/`
+- Agent sync rules: `posetracker-web-sdk/docs/DUAL_WEB_SDK_CHANGES.md`
+- RN packages: [Choose a package](/choose-package)
+
+## Browser deltas vs RN light
+
+- No WebView / Vision backends — native DOM video + canvas
+- AdaptiveChoice quality ladder is simplified (host `idealWidth` / `idealHeight`)
+- Engine cache uses `localStorage` (size limits) instead of native FS

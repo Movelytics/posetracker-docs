@@ -44,7 +44,8 @@
         "pages": [
           "index",
           "quickstart",
-          "choose-package"
+          "choose-package",
+          "web-sdks"
         ]
       },
       {
