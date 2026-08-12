@@ -3,7 +3,8 @@ title: "WebViewPoseView"
 description: "Full props table for the camera / warm-up WebView surface."
 ---
 
-`WebViewPoseView` mounts the MoveNet WebView page: boot UI, camera (`getUserMedia` when `coldStart` is `full`), skeleton overlay, and pose streaming.
+`WebViewPoseView` mounts the MoveNet WebView page: boot UI, pose input
+(camera / uploaded video / still image), skeleton overlay, and pose streaming.
 
 Must be used under `PoseTrackerProvider`. Peer: `react-native-webview`.
 
@@ -16,12 +17,24 @@ Must be used under `PoseTrackerProvider`. Peer: `react-native-webview`.
 />
 ```
 
+Uploaded media (host picks the file — e.g. `expo-image-picker` / document picker):
+
+```tsx
+<WebViewPoseView source="image" sourceUri={fileUri} style={{ flex: 1 }} />
+<WebViewPoseView source="video" sourceUri={fileUri} style={{ flex: 1 }} />
+// or: sourceBase64 + sourceMime (data URL injected into the page)
+```
+
 ## Props
 
 | Prop | Type | Default | Notes |
 |---|---|---|---|
 | `style` | `StyleProp<ViewStyle>` | — | RN layout (typically `{ flex: 1 }` on the camera screen). |
 | `position` | `'front' \| 'back'` | `'front'` | Mapped to `getUserMedia` `facingMode` (`user` / `environment`). |
+| `source` | `'camera' \| 'video' \| 'image'` | `'camera'` | Input mode. Camera uses `getUserMedia`; video/image need `sourceUri` or `sourceBase64`. |
+| `sourceUri` | `string` | — | `file://`, `content://`, `https://`, or `data:` URL for video/image. |
+| `sourceBase64` | `string` | — | Raw base64 (no `data:` prefix); used with `sourceMime`. |
+| `sourceMime` | `string` | image/jpeg or video/mp4 | MIME for `sourceBase64`. |
 | `drawSkeleton` | `boolean` | `true` | In-page skeleton overlay (WebView `skeleton=true\|false`). Pass `false` if you draw from `onKeypoints`. |
 | `drawPlacementBox` | `boolean` | `true` | Placement guide while `posture.ready === false` (WebView `postureBox`). RN sibling overlay. |
 | `placementPaddingPercent` | `number` | `10` | Inset % on each edge (engine posture padding parity). |
@@ -38,9 +51,18 @@ Must be used under `PoseTrackerProvider`. Peer: `react-native-webview`.
 | Use case | Recommended props |
 |---|---|
 | Camera screen | omit `coldStart` (→ `full`), `drawSkeleton` |
+| Uploaded image | `source="image"` + `sourceUri` (host file picker) |
+| Uploaded video | `source="video"` + `sourceUri` |
 | Lobby warmer (1×1) | `coldStart="basic"`, hide with opacity / size |
 | Custom brand overlay | `drawSkeleton={false}` + draw from `onKeypoints` |
 | Custom skeleton theme | `skeletonUuid="…"` or `skeletonDef={{ … }}` |
+
+### Limitations (video / image)
+
+- The **host app** must obtain the file URI / base64 (SDK does not ship a picker).
+- Android `content://` URIs may need the WebView to be able to read them; prefer copying to a `file://` cache path or passing `sourceBase64` for large reliability gaps.
+- Remote `https` media is subject to WebView / CORS rules.
+- Image mode emits keypoints once per load (or when the page receives `__PT_ANALYZE`).
 
 ## SkeletonDefinition (shape)
 

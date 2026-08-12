@@ -8,8 +8,10 @@
 - Docs canonical URL: https://docs.posetracker.com
 - Platforms: iOS, Android, React Native, Expo, Expo Go
 - Model: MoveNet SinglePose Lightning (17 COCO keypoints); light/web also BlazePose via CDN
-- Offline npm: @pose-tracker/react-native-pose-estimation@0.1.3 (~9.9 MB packed)
-- Light npm: @pose-tracker/react-native-pose-estimation-light@0.1.0 (~206 kB packed)
+- Offline npm: @pose-tracker/react-native-pose-estimation@0.2.0 (~9.9 MB packed)
+- Light npm: @pose-tracker/react-native-pose-estimation-light@0.2.0 (~206 kB packed)
+- Web npm: @pose-tracker/pose-estimation-web@0.2.0 · @pose-tracker/pose-estimation-web-react@0.2.0
+- Input sources (all SDKs): camera (default) · uploaded video · still image
 - Free without API key: keypoints-only (offline package works offline; light needs network for TF.js/model)
 - With API key: remote movement engine (exercises, counter + formScore grades, jumps, angles on paid plans)
 - Peer dependency: react-native-webview (>=13.0.0)
@@ -20,8 +22,9 @@
 
 ## Tested with (demo apps / published packages)
 
-- Offline SDK: 0.1.3
-- Light SDK: 0.1.0
+- Offline SDK: 0.2.0
+- Light SDK: 0.2.0
+- Web / Web-React SDK: 0.2.0
 - Expo: ~54
 - React Native: 0.81.x
 - react-native-webview: 13.15 (peer minimum >=13)

@@ -14,7 +14,7 @@ remote `modelUrl` (no MoveNet weights in npm). Product line: **pose-estimation-w
 | [`@pose-tracker/pose-estimation-web`](https://www.npmjs.com/package/@pose-tracker/pose-estimation-web) | Vanilla core (ESM / CJS / script tag) |
 | [`@pose-tracker/pose-estimation-web-react`](https://www.npmjs.com/package/@pose-tracker/pose-estimation-web-react) | Thin React wrapper (`PoseTrackerProvider`, `PoseCamera`, `usePoseTracker`) |
 
-> **Status:** published on npm as **v0.1.0**.
+> **Status:** published on npm as **v0.2.0**.
 > Source: [pose-estimation-web](https://github.com/Movelytics/pose-estimation-web) ·
 > [pose-estimation-web-react](https://github.com/Movelytics/pose-estimation-web-react).
 > Parity target: RN package `@pose-tracker/react-native-pose-estimation-light`.
@@ -35,20 +35,35 @@ Load **TensorFlow.js first**, then the PoseTracker IIFE. Global: `window.PoseTra
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@pose-tracker/pose-estimation-web@0.1.0/dist/pose-tracker.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@pose-tracker/pose-estimation-web@0.2.0/dist/pose-tracker.global.js"></script>
 <script>
   const pt = PoseTracker.createPoseTracker({ model: 'movenet', drawSkeleton: true });
   pt.mount('#root');
-  pt.start();
+  pt.start(); // webcam (default)
+  // Video / image:
+  // await pt.setSource({ type: 'video', src: file }); await pt.start();
+  // await pt.setSource({ type: 'image', src: file }); await pt.start();
+  // await pt.analyze(); // re-run still image
 </script>
 ```
 
 Default MoveNet URL:
 `https://app.posetracker.com/scripts/tmp_model_to_remove.json`
 
-## What works (V1)
+## Input sources (v0.2)
+
+| Source | API | Events |
+|---|---|---|
+| **Camera** (default) | `{ type: 'camera', facingMode? }` or omit | Continuous `keypoints` |
+| **Video** | `{ type: 'video', src: File \| Blob \| URL \| HTMLVideoElement }` | Stream while playing |
+| **Image** | `{ type: 'image', src: File \| Blob \| URL \| HTMLImageElement \| ImageBitmap }` | One shot; re-run with `analyze()` |
+
+React: `<PoseCamera source="video" sourceFile={file} />` (or `sourceUrl`).
+
+## What works (V1 / V0.2)
 
 - MoveNet Lightning keypoints (`getUserMedia` + canvas overlay)
+- Uploaded video / still image pose estimation
 - BlazePose via optional peer **or** CDN (`window.poseDetection` / dynamic jsDelivr inject for IIFE)
 - Custom `modelUrl` (TF.js graph)
 - Free keypoints without API key; plan-gated watermark
@@ -81,3 +96,4 @@ npm run example:react     # http://localhost:5173
 - No WebView / Vision backends — native DOM video + canvas
 - AdaptiveChoice quality ladder is simplified (host `idealWidth` / `idealHeight`)
 - Engine cache uses `localStorage` (size limits) instead of native FS
+- Remote video/image URLs need CORS; prefer local File / blob URLs

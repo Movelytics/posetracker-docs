@@ -43,6 +43,17 @@ export function App() {
 | `score` | `number` | Mean pose confidence |
 | `timestampMs` | `number` | Frame time |
 
+## Input sources
+
+Default is live **camera**. For uploaded media, the host app picks a file and passes:
+
+```tsx
+<WebViewPoseView source="image" sourceUri={uri} style={{ flex: 1 }} />
+<WebViewPoseView source="video" sourceUri={uri} style={{ flex: 1 }} />
+```
+
+Web: `pt.setSource({ type: 'image' | 'video', src })` then `start()` / `analyze()`.
+
 ## Useful `WebViewPoseView` props
 
 | Prop | Default | Notes |
