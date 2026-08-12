@@ -53,7 +53,10 @@ Optional overrides on the provider:
 >
 ```
 
-`model: 'blazepose'` is accepted for API parity but **not wired** yet.
+`model: 'blazepose'` loads BlazePose (lite) via CDN
+`@tensorflow-models/pose-detection` in the WebView. Keypoints stay COCO-17.
+Heavier than MoveNet — prefer MoveNet on mid-range devices. Offline package
+does not support BlazePose.
 
 ## Demos & source
 

@@ -47,7 +47,7 @@ See also: [WebViewPoseView](/reference/webview-pose-view) · [Exercises](/refere
 
 | Option | Type | Default | Notes |
 |---|---|---|---|
-| `model` | `'movenet' \| 'movenet-singlepose-lightning' \| 'lightning' \| 'blazepose' \| string` | `'movenet'` | Product Lightning URL. `blazepose` is **not wired** (clear boot error). Ignored if `modelUrl` is set. |
+| `model` | `'movenet' \| 'movenet-singlepose-lightning' \| 'lightning' \| 'blazepose' \| string` | `'movenet'` | Product Lightning URL. `blazepose` loads CDN pose-detection (lite) in the WebView; same COCO-17 keypoints. Ignored if `modelUrl` is set. |
 | `modelUrl` | `string` | Front MoveNet JSON URL | Explicit TF.js graph-model topology; weight shards are relative neighbors. |
 | `tfjsCdnBase` | `string` | `https://cdn.jsdelivr.net/npm` | Mirror root for TF.js scripts. |
 | `tfjsVersion` | `string` | `'4.22.0'` | CDN version pin. |

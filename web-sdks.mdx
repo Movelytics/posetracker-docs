@@ -21,6 +21,8 @@ remote `modelUrl` (no MoveNet weights in npm). Product line: **pose-estimation-w
 
 ```bash
 npm install @pose-tracker/pose-estimation-web @tensorflow/tfjs
+# Optional BlazePose (bundlers / React):
+npm install @tensorflow-models/pose-detection
 # React:
 npm install @pose-tracker/pose-estimation-web-react react react-dom
 ```
@@ -31,7 +33,7 @@ Default MoveNet URL:
 ## What works (V1)
 
 - MoveNet Lightning keypoints (`getUserMedia` + canvas overlay)
-- Optional BlazePose via `@tensorflow-models/pose-detection`
+- BlazePose via optional peer **or** CDN (`window.poseDetection` / dynamic jsDelivr inject for IIFE)
 - Custom `modelUrl` (TF.js graph)
 - Free keypoints without API key; plan-gated watermark
 - `preload` / `warmup` with `coldStart: 'basic' | 'full'`

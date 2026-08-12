@@ -60,7 +60,9 @@ function CameraScreen() {
 
 ## Facts agents should not invent
 
-- Model: **MoveNet SinglePose Lightning only** (not BlazePose / MediaPipe in this SDK).
+- Model: default **MoveNet SinglePose Lightning**. Light (+ web) also support
+  `model: 'blazepose'` via CDN pose-detection. Offline RN stays MoveNet-only.
+  Do not pass `{ features: { blazepose: true } }` — use `options.model`.
 - Camera permission strings are **host-owned** — SDK does not merge them.
 - Light requires **network** for TF.js + model each WebView boot; offline does not.
 - Free without API key: keypoints. Paid with key: movement engine.

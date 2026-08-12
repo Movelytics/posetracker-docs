@@ -42,7 +42,9 @@ Set on the provider:
 | `keypoints` | `false` | Raw keypoints **during** an exercise — paid. Pose-only (no exercise) always streams. |
 | `minGrade` | — | `'A'…'D'` — only count reps at/above this grade |
 
-Not supported (MoveNet Lightning only): `blazepose`, `poseEngine`, `mediapipeModel`, `poseBackend`, `runInWorker` → `feature_not_supported`.
+Not supported as **features flags**: `blazepose`, `poseEngine`, `mediapipeModel`,
+`poseBackend`, `runInWorker` → `feature_not_supported`.
+Select BlazePose with `options.model = 'blazepose'` on light / web (not via `features`).
 
 ## Plan gating matrix
 
@@ -113,7 +115,7 @@ Override: `WebViewPoseView` `showWatermark`. Off for `coldStart: 'basic'` warmer
 | Unknown exercise | `invalid_exercise` |
 | `jump_analysis` without height | `jump_analysis_missing_height` |
 | Free + developer features | `free_plan_feature_blocked` |
-| BlazePose / MediaPipe options | `feature_not_supported` |
+| Unsupported `features` keys (use `options.model` for BlazePose) | `feature_not_supported` |
 | Offline + key at camera start | `offline_metered` |
 | Quota | `quota_exceeded` |
 | Revoked token | `invalid_token` (caches purged → keypoints-only) |

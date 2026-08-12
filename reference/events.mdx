@@ -99,7 +99,7 @@ Camera boot sequence (classic messages): `accessing webcam` → `loading pose mo
 | `network` / `network_required` | Handshake or required download failed |
 | `offline_metered` | API key present but camera_start metering needs network — keypoints-only continues |
 | `free_plan_feature_blocked` | Free plan + angles / recommendations / progression / keypoints+exercise |
-| `feature_not_supported` | BlazePose / MediaPipe-style options — SDK is MoveNet only |
+| `feature_not_supported` | Unsupported `features` keys (e.g. `{ blazepose: true }`) — use `options.model` for BlazePose on light/web |
 | `invalid_exercise` | Unknown exercise id |
 | `jump_analysis_missing_height` | Missing `userHeightCm` |
 | `model_load_failed` / `engine_load_failed` / `integrity_check_failed` | Load / cache integrity |
