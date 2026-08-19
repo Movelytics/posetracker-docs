@@ -85,6 +85,7 @@
 - Org: https://www.npmjs.com/org/pose-tracker
 - Offline SDK: https://github.com/Movelytics/react-native-pose-estimation
 - Offline demo: https://github.com/Movelytics/react-native-pose-estimation-demo
+- Offline Expo Snack: https://snack.expo.dev/@fsepret/posetracker-sdk-demo-app
 - Light SDK: https://github.com/Movelytics/react-native-pose-estimation-light
 - Light demo: https://github.com/Movelytics/react-native-pose-estimation-light-demo
 - Web SDK: https://github.com/Movelytics/pose-estimation-web
