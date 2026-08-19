@@ -6,11 +6,11 @@ description: "PoseTracker React Native SDKs — human pose estimation for iOS an
 **PoseTracker** is a React Native human pose estimation SDK for **iOS and Android** (including **Expo Go**). It runs **MoveNet SinglePose Lightning** (17 COCO keypoints) in a WebView, streams **free keypoints without an API key**, and unlocks exercise intelligence (reps, form score, jumps) with an optional API key.
 
 <CardGroup cols={2}>
+  <Card title="Try on your phone" icon="mobile" href="/try-expo-go">
+    Expo Go + a Snack — live pose estimation in about 30 seconds, no native build.
+  </Card>
   <Card title="Quickstart" icon="bolt" href="/quickstart">
     Install, wrap with Provider, mount WebViewPoseView — keypoints in seconds.
-  </Card>
-  <Card title="Choose a package" icon="scale-balanced" href="/choose-package">
-    Offline (~9.9 MB) vs Light (~206 kB) — pick by install size vs network.
   </Card>
 </CardGroup>
 
@@ -50,12 +50,15 @@ Same exports: `PoseTrackerProvider`, `WebViewPoseView`, `usePoseTracker`.
 
 ## Demo apps
 
-- [Offline demo](https://github.com/Movelytics/react-native-pose-estimation-demo) · [Expo Snack](https://snack.expo.dev/@fsepret/posetracker-sdk-demo-app)
-- [Light demo](https://github.com/Movelytics/react-native-pose-estimation-light-demo)
+- [Try on your phone](/try-expo-go) — Expo Go Snacks (offline + light)
+- [Offline demo](https://github.com/Movelytics/react-native-pose-estimation-demo) · [Snack](https://snack.expo.dev/@fsepret/posetracker-sdk-demo-app)
+- [Light demo](https://github.com/Movelytics/react-native-pose-estimation-light-demo) · [Snack](https://snack.expo.dev/@fsepret/posetracker-sdk-light-demo-app)
 
 ## Next
 
-1. [Quickstart](/quickstart) — copy-paste keypoints
-2. [Permissions](/permissions) — host app owns camera strings
-3. [Reference](/reference/provider-client) — Provider, WebViewPoseView, exercises, events
-4. [For LLMs](/llms) — machine-oriented facts
+1. [Try on your phone](/try-expo-go) — Expo Go, no native build
+2. [Quickstart](/quickstart) — copy-paste keypoints
+3. [Choose a package](/choose-package) — offline vs light
+4. [Permissions](/permissions) — host app owns camera strings
+5. [Reference](/reference/provider-client) — Provider, WebViewPoseView, exercises, events
+6. [For LLMs](/llms) — machine-oriented facts

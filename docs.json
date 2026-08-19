@@ -43,6 +43,7 @@
         "group": "Get started",
         "pages": [
           "index",
+          "try-expo-go",
           "quickstart",
           "choose-package",
           "web-sdks"
