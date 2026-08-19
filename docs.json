@@ -95,13 +95,13 @@
     ],
     "primary": {
       "type": "button",
-      "label": "GitHub",
-      "href": "https://github.com/Movelytics"
+      "label": "Star us on GitHub",
+      "href": "https://github.com/Movelytics/react-native-pose-estimation"
     }
   },
   "footer": {
     "socials": {
-      "github": "https://github.com/Movelytics"
+      "github": "https://github.com/Movelytics/react-native-pose-estimation"
     }
   },
   "contextual": {
