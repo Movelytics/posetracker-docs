@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "PoseTracker",
-  "description": "PoseTracker React Native SDK docs — pose estimation for iOS and Android (Expo Go). Offline (~9.9 MB) and light (~206 kB) packages, free keypoints, optional exercise engine.",
+  "description": "PoseTracker React Native SDK docs — pose estimation for iOS and Android (Expo Go). Offline (~10.0 MB) and light (~212 kB) packages, free keypoints, optional exercise engine.",
   "colors": {
     "primary": "#FFC300",
     "light": "#FFD54A",

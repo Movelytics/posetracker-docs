@@ -26,5 +26,5 @@ Connect this repository in the [Mintlify dashboard](https://app.mintlify.com/pos
 
 | Package | Role |
 |---|---|
-| `@pose-tracker/react-native-pose-estimation` | Offline / bundled MoveNet (~9.9 MB) |
-| `@pose-tracker/react-native-pose-estimation-light` | Light / CDN (~206 kB) |
+| `@pose-tracker/react-native-pose-estimation` | Offline / bundled MoveNet (~10.0 MB) |
+| `@pose-tracker/react-native-pose-estimation-light` | Light / CDN (~212 kB) |
