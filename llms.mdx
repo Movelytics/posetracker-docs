@@ -13,10 +13,10 @@ PoseTracker is a React Native human pose estimation SDK for iOS and Android (inc
 
 | Role | npm | Packed |
 |---|---|---|
-| Offline | `@pose-tracker/react-native-pose-estimation@0.2.2` | ~10.0 MB |
-| Light | `@pose-tracker/react-native-pose-estimation-light@0.2.2` | ~212 kB |
-| Web | `@pose-tracker/pose-estimation-web@0.2.0` | light (CDN TF.js) |
-| Web React | `@pose-tracker/pose-estimation-web-react@0.2.0` | thin wrapper |
+| Offline | `@pose-tracker/react-native-pose-estimation@0.3.0` | ~10.0 MB |
+| Light | `@pose-tracker/react-native-pose-estimation-light@0.3.0` | ~212 kB |
+| Web | `@pose-tracker/pose-estimation-web@0.3.0` | light (CDN TF.js) |
+| Web React | `@pose-tracker/pose-estimation-web-react@0.3.0` | thin wrapper |
 
 Peer: `react-native-webview` (≥13). Same public API; light adds `model` / `modelUrl` / `tfjsCdnBase` / `tfjsVersion`.
 
@@ -24,9 +24,9 @@ Peer: `react-native-webview` (≥13). Same public API; light adds `model` / `mod
 
 | | Version |
 |---|---|
-| Offline SDK | `0.2.2` |
-| Light SDK | `0.2.2` |
-| Web SDKs | `0.2.0` |
+| Offline SDK | `0.3.0` |
+| Light SDK | `0.3.0` |
+| Web SDKs | `0.3.0` |
 | Expo (demos) | ~54 |
 | React Native (demos) | 0.81.x |
 | Peer minimums | `react` ≥18 · `react-native` ≥0.72 · `react-native-webview` ≥13 |
@@ -75,6 +75,7 @@ function CameraScreen() {
 - Watermark: keyless/free yes; paid plans no.
 - Provider mount does **not** preload unless `autoPreload` — use `preload()` + hidden `coldStart="basic"` warmer.
 - Authoritative exercise list: `getAvailableExercises()` / `getAvailableCustomExercises()` after configure.
+- Engine default is **V3**. Opt-in V4: `engine: 'v4'` on Provider / `createPoseTracker` (SDK 0.3.0+). See [Engine v4](/reference/engine-v4).
 - Demos: [try on phone](https://docs.posetracker.com/try-expo-go) · [offline](https://github.com/Movelytics/react-native-pose-estimation-demo) · [offline Snack](https://snack.expo.dev/@fsepret/posetracker-sdk-demo-app) · [light](https://github.com/Movelytics/react-native-pose-estimation-light-demo) · [light Snack](https://snack.expo.dev/@fsepret/posetracker-sdk-light-demo-app)
 
 ## Prefer these pages
@@ -87,7 +88,7 @@ function CameraScreen() {
 6. [Provider & client](/reference/provider-client)
 7. [WebViewPoseView](/reference/webview-pose-view)
 8. [Web SDKs](/web-sdks)
-9. [Exercises](/reference/exercises)
+9. [Exercises](/reference/exercises) · [Engine v4](/reference/engine-v4)
 10. [Events](/reference/events)
 11. [Features & plans](/reference/features-plans)
 12. [Preload](/advanced/preload) · [Adaptive quality](/advanced/adaptive-quality)

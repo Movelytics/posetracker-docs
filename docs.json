@@ -64,6 +64,7 @@
           "reference/provider-client",
           "reference/webview-pose-view",
           "reference/exercises",
+          "reference/engine-v4",
           "reference/events",
           "reference/features-plans"
         ]

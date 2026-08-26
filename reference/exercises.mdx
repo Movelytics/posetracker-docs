@@ -1,19 +1,22 @@
 ---
 title: "Exercises"
-description: "FSM catalog, face_* aliases, jump customs, and StartExerciseOptions."
+description: "FSM catalog, V4 opt-in catalog, face_* aliases, jump customs, and StartExerciseOptions."
 ---
 
 Exercises require **full-engine** mode: a valid `apiToken`, successful handshake, and loaded remote engine bundle. Without a key, use [keypoints](/keypoints) only.
+
+Default engine is **V3** (Strapi FSM). Pass `engine: 'v4'` at the Provider to load the heuristic catalog — see [Engine v4 (opt-in)](/reference/engine-v4).
 
 Authoritative lists after configure:
 
 ```ts
 const { exercises, client, startExercise, stopExercise } = usePoseTracker();
 
-// FSM movements from the handshake manifest
+// V3: FSM movements from the handshake manifest
+// V4: catalog compiled into engine-v4.bundle.js
 client.getAvailableExercises(); // same as `exercises` on the hook
 
-// Customs shipped in the engine bundle (not in Strapi movement list)
+// Customs shipped in the V3 engine bundle (not in Strapi movement list)
 client.getAvailableCustomExercises(); // jump_analysis, air_time_jump, …
 ```
 
@@ -66,6 +69,26 @@ Exact ids come from the **server manifest** (`exercises[].id`). Hosts and demos 
 | `balance_leg_right` | `face_balance_leg_right` | static |
 
 Always prefer `getAvailableExercises()` for the live plan list (premium gating can differ by plan).
+
+## Engine v4 catalog (opt-in)
+
+Requires `engine: 'v4'` at Provider / `createPoseTracker` (SDK 0.3.0+). These ids are **not** in the Strapi V3 list.
+
+| Id | Type |
+|---|---|
+| `squat` | V4 catalog squat (replaces V3 FSM squat on this channel) |
+| `shoulder_roll` | V4-only |
+| `shoulder_deep_breath` | V4-only |
+| `chair_forward_fold` | V4-only |
+
+On a V3 client, V4-only ids throw `Exercise 'x' requires engine: 'v4'` (no silent fallback). Jumps stay on the V3 channel. V4 does not emit `recommendations`.
+
+```ts
+startExercise('shoulder_roll');
+startExercise('squat'); // V4 squat when engine: 'v4'
+```
+
+Full handshake notes: [Engine v4](/reference/engine-v4).
 
 ## Aliases
 
@@ -131,10 +154,11 @@ During an FSM session (always, not feature-flagged):
 - `onFormScore` — convenience stream (prefer nested `onCounter.formScore` for the counted rep)
 - `onExerciseSummary` — after `stopExercise()` / session end
 
-Opt-in (paid + flags): `angles`, `recommendations`, `progression`, keypoints-during-exercise — see [Features & plans](/reference/features-plans).
+Opt-in (paid + flags): `angles`, `recommendations`, `progression`, keypoints-during-exercise — see [Features & plans](/reference/features-plans). V4 sessions do not emit `recommendations`.
 
 ## Related
 
+- [Engine v4 (opt-in)](/reference/engine-v4) — `engine: 'v4'` at Provider
 - [API key](/api-key) — getting into full-engine
 - [Events catalog](/reference/events)
 - [WebViewPoseView](/reference/webview-pose-view) — `drawPlacementBox`

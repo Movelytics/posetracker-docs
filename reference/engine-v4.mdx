@@ -1,0 +1,67 @@
+---
+title: "Engine v4 (opt-in)"
+description: "Opt-in V4 heuristic engine — catalog squat / shoulder_roll / … without changing the V3 default."
+---
+
+Requires SDK **0.3.0+**. Default remains **V3** (production FSM, `engine.bundle.js`). V4 is an explicit opt-in at **init / handshake**, not per `startExercise`.
+
+## When to use it
+
+Set `engine: 'v4'` when you want the heuristic catalog compiled into `engine-v4.bundle.js`:
+
+| Id | Notes |
+|---|---|
+| `squat` | V4 catalog squat (not the V3 FSM squat) |
+| `shoulder_roll` | V4-only |
+| `shoulder_deep_breath` | V4-only |
+| `chair_forward_fold` | V4-only |
+
+Jumps (`jump_analysis`, `air_time_jump`) stay **V3-only**. There is no silent fallback: a V4-only id on a V3 client throws `Exercise 'x' requires engine: 'v4'`.
+
+## Provider / factory
+
+Same option on React Native (offline + light) and web:
+
+```tsx
+<PoseTrackerProvider
+  apiToken="YOUR_API_KEY"
+  engine="v4"
+>
+  {children}
+</PoseTrackerProvider>
+```
+
+```ts
+createPoseTracker({ apiToken: 'YOUR_API_KEY', engine: 'v4' });
+```
+
+Omit `engine` (or pass `'v3'`) → today’s production path. Changing engine mid-session would require a second bundle download — out of scope; remount the Provider.
+
+## Handshake
+
+The SDK sends `engineChannel: 'v3' | 'v4'` on `POST /api/sdk/configure`. Older SDKs (0.2.x) omit the field; the backend still serves V3.
+
+| Channel | Remote engine version | Bundle |
+|---|---|---|
+| `v3` (default) | `0.4.0` | `engine.bundle.js` |
+| `v4` | `4.0.0` | `engine-v4.bundle.js` |
+
+`getAvailableExercises()` on V4 returns the catalog from the bundle (`listExercises()`), not Strapi’s V3 list.
+
+## Iframe
+
+Default tracking iframe is still V3. Append `&engine=v4`:
+
+```
+https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=shoulder_roll&engine=v4
+```
+
+## Events
+
+V4 emits `counter` (count + form score A–F) and `exercise_summary` on `stopExercise()`. It does **not** emit `recommendations` — leave `features.recommendations` off, or ignore that stream, so hosts that listen for reco are not surprised.
+
+## Related
+
+- [Exercises](/reference/exercises) — V3 FSM + V4 catalog ids
+- [Provider & client](/reference/provider-client) — `engine` prop
+- [API key](/api-key) — full-engine handshake

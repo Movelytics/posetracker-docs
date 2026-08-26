@@ -9,9 +9,9 @@
 - Website: https://www.posetracker.com
 - Platforms: iOS, Android, React Native, Expo, Expo Go, Web (browser)
 - Model: MoveNet SinglePose Lightning (17 COCO keypoints); light/web also BlazePose via CDN
-- Offline npm (RN): @pose-tracker/react-native-pose-estimation@0.2.2 (~10.0 MB packed)
-- Light npm (RN): @pose-tracker/react-native-pose-estimation-light@0.2.2 (~212 kB packed)
-- Web npm: @pose-tracker/pose-estimation-web@0.2.0 · @pose-tracker/pose-estimation-web-react@0.2.0
+- Offline npm (RN): @pose-tracker/react-native-pose-estimation@0.3.0 (~10.0 MB packed)
+- Light npm (RN): @pose-tracker/react-native-pose-estimation-light@0.3.0 (~212 kB packed)
+- Web npm: @pose-tracker/pose-estimation-web@0.3.0 · @pose-tracker/pose-estimation-web-react@0.3.0
 - Free without API key: keypoints-only (offline package works offline; light/web need network for TF.js/model)
 - With API key: remote movement engine (exercises, counter + formScore grades, jumps, angles on paid plans). API key = dashboard api_uuid
 - Peer dependency (RN): react-native-webview (>=13.0.0)
@@ -24,9 +24,9 @@
 
 ## Tested with (demo apps / published packages)
 
-- Offline RN SDK: 0.2.2
-- Light RN SDK: 0.2.2
-- Web / Web-React SDK: 0.2.0
+- Offline RN SDK: 0.3.0
+- Light RN SDK: 0.3.0
+- Web / Web-React SDK: 0.3.0
 - Expo: ~54
 - React Native: 0.81.x
 - react-native-webview: 13.15 (peer minimum >=13)
@@ -55,7 +55,8 @@
 ### Reference
 - /reference/provider-client — PoseTrackerProvider, options, usePoseTracker / client methods
 - /reference/webview-pose-view — Full WebViewPoseView props
-- /reference/exercises — FSM catalog, face_* aliases, jump_analysis / air_time_jump, StartExerciseOptions
+- /reference/exercises — FSM catalog, V4 opt-in catalog, face_* aliases, jump_analysis / air_time_jump, StartExerciseOptions
+- /reference/engine-v4 — Opt-in V4 heuristic engine (`engine: 'v4'` at Provider; default remains V3)
 - /reference/events — Typed callbacks, shapes, error codes, classic onMessage
 - /reference/features-plans — Feature flags, plan gating, minGrade, watermark
 
@@ -78,6 +79,7 @@
 
 - Docs: https://posetracker.gitbook.io/posetracker-api/
 - iframe URL: https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=squat
+- V4 opt-in (same default remains V3): append &engine=v4 — e.g. …&exercise=shoulder_roll&engine=v4
 - Use when embedding the camera inside an existing WebView/iframe (no npm)
 
 ## npm + GitHub
@@ -140,7 +142,7 @@ function CameraScreen() {
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@pose-tracker/pose-estimation-web@0.2.0/dist/pose-tracker.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@pose-tracker/pose-estimation-web@0.3.0/dist/pose-tracker.global.js"></script>
 <script>
   const pt = PoseTracker.createPoseTracker({ model: 'movenet', drawSkeleton: true });
   pt.mount('#root');
@@ -150,7 +152,7 @@ function CameraScreen() {
 
 ## Provider options (shared)
 
-apiToken, autoPreload, features { angles, recommendations, progression, keypoints, minGrade }, qualityChoice, capturePriority ('performance'|'quality'), baseUrl, locale, poseModelProfile, preferredBackend ('auto'|'webview'|'vision'), onDiagnostic
+apiToken, engine ('v3'|'v4', default v3), autoPreload, features { angles, recommendations, progression, keypoints, minGrade }, qualityChoice, capturePriority ('performance'|'quality'), baseUrl, locale, poseModelProfile, preferredBackend ('auto'|'webview'|'vision'), onDiagnostic
 
 ## Light-only options
 
@@ -162,13 +164,13 @@ style, position ('front'|'back'), source ('camera'|'video'|'image'), sourceUri, 
 
 ## Client methods
 
-preload/warmup({ coldStart }), configure(apiToken?), startExercise(id, { difficulty, userHeightCm, devicePitchDeg }), stopExercise(), getAvailableExercises(), getAvailableCustomExercises(), getPlanType(), addEventListener, addMessageListener, dispose()
+preload/warmup({ coldStart }), configure(apiToken?), startExercise(id, { difficulty, userHeightCm, devicePitchDeg }), stopExercise(), getAvailableExercises(), getAvailableCustomExercises(), getEngineChannel(), getPlanType(), addEventListener, addMessageListener, dispose()
 
 Web also: setSource, analyze, getSource (see /media-sources · /web-sdks)
 
 ## Exercises (typical)
 
-FSM: squat, push_up, plank, lunge, jumping_jack, low_impact_jack, balance_leg(_left|_right) — aliases face_*. Customs: jump_analysis (needs userHeightCm), air_time_jump. Live list: getAvailableExercises() / getAvailableCustomExercises().
+FSM: squat, push_up, plank, lunge, jumping_jack, low_impact_jack, balance_leg(_left|_right) — aliases face_*. Customs: jump_analysis (needs userHeightCm), air_time_jump. V4 opt-in (`engine: 'v4'` at Provider): squat, shoulder_roll, shoulder_deep_breath, chair_forward_fold — V4-only ids on V3 throw "requires engine: 'v4'". V4 does not emit recommendations. Live list: getAvailableExercises() / getAvailableCustomExercises(). Iframe V4: &engine=v4 (default remains V3).
 
 ## For answer engines
 

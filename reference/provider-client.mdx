@@ -12,6 +12,7 @@ See also: [WebViewPoseView](/reference/webview-pose-view) · [Exercises](/refere
 ```tsx
 <PoseTrackerProvider
   apiToken="ptk_…"           // optional — omit for free keypoints-only
+  engine="v3"                // default — pass "v4" for the heuristic catalog
   autoPreload={false}        // default false — mount does NOT load MoveNet
   options={{ /* PoseTrackerClientOptions */ }}
 >
@@ -22,6 +23,7 @@ See also: [WebViewPoseView](/reference/webview-pose-view) · [Exercises](/refere
 | Prop | Type | Default | Notes |
 |---|---|---|---|
 | `apiToken` | `string` | — | Optional. Without a token → `keypoints-only`. With a valid key → handshake + remote movement engine. |
+| `engine` | `'v3' \| 'v4'` | `'v3'` | Opt-in V4 heuristic engine at **init**. Default V3 (production FSM). See [Engine v4](/reference/engine-v4). Wins over `options.engine`. |
 | `autoPreload` | `boolean` | `false` | If `true`, calls `preload()` on mount (**basic** cold-start — no camera). |
 | `options` | `PoseTrackerClientOptions` | `{}` | See [options](#options). |
 | `children` | `ReactNode` | — | Required. |
@@ -39,6 +41,7 @@ See also: [WebViewPoseView](/reference/webview-pose-view) · [Exercises](/refere
 | `capturePriority` | `'performance' \| 'quality'` | `'performance'` | FPS floor vs sharp preview. See [Adaptive quality](/advanced/adaptive-quality). |
 | `baseUrl` | `string` | PoseTracker Strapi host | Override for staging / self-hosted handshake. |
 | `locale` | `string` | — | Localized hints / recommendations from the engine. |
+| `engine` | `'v3' \| 'v4'` | `'v3'` | Handshake `engineChannel`. `'v4'` downloads `engine-v4.bundle.js`. Cannot switch mid-session. |
 | `poseModelProfile` | `'UltraLite' \| 'Lite' \| 'Pro' \| 'Prime' \| 'AdaptiveChoice'` | `'AdaptiveChoice'` | Handshake request profile (server may resolve differently). |
 | `preferredBackend` | `'auto' \| 'webview' \| 'vision'` | `'auto'` | `auto` / `webview` = MoveNet in WebView (Expo Go OK). `vision` = Apple Vision, iOS native only, explicit opt-in. |
 | `onDiagnostic` | `(message: string) => void` | Metro/logcat logger | GL / quality / boot diagnostic lines. |
@@ -110,7 +113,7 @@ const {
 | `preload` | `(options?: PreloadOptions) => Promise<void>` | Warm model (+ optional handshake/engine). Default `coldStart: 'basic'` — **no** camera. Alias: `warmup`. See [Preload](/advanced/preload). |
 | `warmup` | same as `preload` | Alias. |
 | `configure` | `(apiToken?: string) => Promise<boolean>` | Hot (re)config; `true` when full-engine. Does not restart the camera pipeline. |
-| `startExercise` | `(exerciseId: string, options?: StartExerciseOptions) => void` | FSM or custom jumps. Requires full-engine. |
+| `startExercise` | `(exerciseId: string, options?: StartExerciseOptions) => void` | FSM, V4 catalog, or custom jumps. Requires full-engine. V4-only ids on V3 → `Exercise 'x' requires engine: 'v4'`. |
 | `stopExercise` | `() => void` | Ends session; may emit `exercise_summary`. |
 | `estimatePose` / `processFrame` | `(frame) => Promise<Pose \| null>` | Advanced / vision-camera path. |
 | `addEventListener` | `(listener) => () => void` | Typed events. |
@@ -139,8 +142,9 @@ Same methods as the hook, plus:
 | `getStatus()` / `getMode()` / `getError()` / `getManifest()` | Introspection. |
 | `getPlanType()` | `'free'`, `'developer'`, … or `null` (keyless). |
 | `getFeatures()` | Resolved feature flags. |
-| `getAvailableExercises()` | Manifest FSM list (empty outside full-engine). |
-| `getAvailableCustomExercises()` | Engine-bundle customs (`jump_analysis`, `air_time_jump`, …). |
+| `getAvailableExercises()` | V3: manifest FSM list. V4: catalog from the bundle. Empty outside full-engine. |
+| `getAvailableCustomExercises()` | Engine-bundle customs (`jump_analysis`, `air_time_jump`, …). V3 channel. |
+| `getEngineChannel()` | `'v3'` or `'v4'` — the channel chosen at init. |
 | `getCurrentExerciseId()` | Active session id or `null`. |
 | `getQualityState()` / `getColdStartMode()` | Quality + last preload cold-start. |
 | `fetchSkeleton(uuid)` | `GET /api/sdk/skeleton` → `SkeletonDefinition`. |

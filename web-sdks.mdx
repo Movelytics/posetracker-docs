@@ -14,7 +14,7 @@ remote `modelUrl` (no MoveNet weights in npm). Product line: **pose-estimation-w
 | [`@pose-tracker/pose-estimation-web`](https://www.npmjs.com/package/@pose-tracker/pose-estimation-web) | Vanilla core (ESM / CJS / script tag) |
 | [`@pose-tracker/pose-estimation-web-react`](https://www.npmjs.com/package/@pose-tracker/pose-estimation-web-react) | Thin React wrapper (`PoseTrackerProvider`, `PoseCamera`, `usePoseTracker`) |
 
-> **Status:** published on npm as **v0.2.0**.
+> **Status:** npm **v0.3.0** (opt-in `engine: 'v4'`; default remains V3).
 > Source: [pose-estimation-web](https://github.com/Movelytics/pose-estimation-web) ·
 > [pose-estimation-web-react](https://github.com/Movelytics/pose-estimation-web-react).
 > Parity target: RN package `@pose-tracker/react-native-pose-estimation-light`.
@@ -35,7 +35,7 @@ Load **TensorFlow.js first**, then the PoseTracker IIFE. Global: `window.PoseTra
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@pose-tracker/pose-estimation-web@0.2.0/dist/pose-tracker.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@pose-tracker/pose-estimation-web@0.3.0/dist/pose-tracker.global.js"></script>
 <script>
   const pt = PoseTracker.createPoseTracker({ model: 'movenet', drawSkeleton: true });
   pt.mount('#root');
@@ -72,6 +72,7 @@ React: `<PoseCamera source="video" sourceFile={file} />` (or `sourceUrl`).
 - Free keypoints without API key; plan-gated watermark
 - `preload` / `warmup` with `coldStart: 'basic' | 'full'`
 - `configure(apiToken)` handshake + remote engine download + sealed cache
+- Opt-in `engine: 'v4'` (default `'v3'`) — see [Engine v4](/reference/engine-v4)
 - `startExercise` / `stopExercise` + counter / posture / angles / jumps events
 - Features gating (`angles`, `recommendations`, `progression`, `keypoints`, `minGrade`)
 - Skeleton overlay via `skeletonDef` / `skeletonUuid`
@@ -84,6 +85,7 @@ cd posetracker-web-sdk && npm install && npm run build
 npm run example:vanilla   # http://localhost:5174
 npm run example:react     # http://localhost:5173
 # Exercises: append ?apiToken=YOUR_KEY
+# V4 catalog: append &engine=v4 (default remains V3)
 ```
 
 ## Quick links

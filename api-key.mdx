@@ -59,6 +59,12 @@ Same pattern works with `@pose-tracker/react-native-pose-estimation-light`.
 https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=squat&skeleton=true
 ```
 
+V4 catalog (opt-in, same default remains V3):
+
+```
+https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=shoulder_roll&engine=v4
+```
+
 ## Modes
 
 | Mode | When | Events |
@@ -72,7 +78,8 @@ Shown for keyless and free plans. Hidden for paid plans (`developer`, `company`,
 
 ## Reference
 
-- [Exercises](/reference/exercises) — FSM catalog, aliases, jumps, `StartExerciseOptions`
+- [Exercises](/reference/exercises) — FSM catalog, V4 opt-in, aliases, jumps, `StartExerciseOptions`
+- [Engine v4](/reference/engine-v4) — `engine: 'v4'` at Provider / iframe `?engine=v4`
 - [Features & plans](/reference/features-plans) — gating matrix, `minGrade`, watermark
 - [Events](/reference/events) — `onCounter`, posture, jump_* shapes
 - [Provider & client](/reference/provider-client) — `configure`, `startExercise`, options

@@ -1,11 +1,11 @@
 ---
 title: "Media sources"
-description: "Camera, uploaded video, and still image inputs for React Native and Web SDKs (v0.2.0)."
+description: "Camera, uploaded video, and still image inputs for React Native and Web SDKs (v0.3.0)."
 ---
 
 # Media sources
 
-PoseTracker accepts three input modes on **all four** npm packages (v**0.2.0**).
+PoseTracker accepts three input modes on **all four** npm packages (v**0.3.0**).
 Default is live **camera** so quickstarts stay unchanged.
 
 | Mode | What you pass | Keypoints |
@@ -80,7 +80,7 @@ await pt.analyze();     // same still again
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@pose-tracker/pose-estimation-web@0.2.0/dist/pose-tracker.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@pose-tracker/pose-estimation-web@0.3.0/dist/pose-tracker.global.js"></script>
 <script>
   const pt = PoseTracker.createPoseTracker({ model: 'movenet', drawSkeleton: true });
   pt.mount('#root');
@@ -149,7 +149,7 @@ skeleton / watermark / `coldStart` props).
 | video | Continuous while playing | No camera permission |
 | image | One shot | Web: `analyze()` · RN: `__PT_ANALYZE` / new URI |
 
-## Packages (npm 0.2.0)
+## Packages (npm 0.3.0)
 
 | Package | Surface |
 |---|---|
