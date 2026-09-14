@@ -1,0 +1,84 @@
+---
+title: "WebView messages"
+description: "postMessage contract for the PoseTracker WebView — initialization, counter, keypoints, errors, jumps, upload extras."
+---
+
+The hosted page sends JSON to the host. Browser embeds use `window.parent.postMessage(JSON.stringify(data), "*")`. iOS uses `webkit.messageHandlers.iosListener`. Android uses `window.webViewCallback`. **Same `type` field** in all three.
+
+SDK apps should prefer typed callbacks (`onCounter`, `onKeypoints`, …). `onMessage` on the SDK is this classic shape. Full SDK catalog: [Events](/reference/events).
+
+## Transport
+
+```js
+window.addEventListener("message", (event) => {
+  let msg = event.data;
+  if (typeof msg === "string") {
+    try { msg = JSON.parse(msg); } catch { return; }
+  }
+  if (msg && msg.type) handle(msg);
+});
+```
+
+## Real-time boot
+
+| `type` | Shape | When |
+|---|---|---|
+| `initialization` | `{ message, ready? }` | `checking you plan and access` → `accessing webcam` → `loading pose model` (`ready: false`) → `running` (`ready: true`) |
+| `error` | `{ error, message, current_count?, origin? }` | Failures. May include `webgl_unavailable`, `backend_fallback_wasm`, `backend_fallback_cpu` |
+
+Live camera is `type: "initialization"` with `ready: true` and `message: "running"`.
+
+## Pose and exercise
+
+| `type` | Key fields |
+|---|---|
+| `keypoints` | `data: [{ name, x, y, score }]` — 17 COCO joints, x/y normalized 0–1 |
+| `angles` | `data: { left_side, right_side }` — needs `angles=true` + paid plan |
+| `counter` | `current_count`, optional `form_score: { score, avg_score, grade }`, optional `reference_score` in reference mode |
+| `form_score` | Convenience `{ score, avg_score, grade }`. Authoritative counted-rep grade is on `counter.form_score` |
+| `posture` | `message`, `direction`, `requirements`, `ready` |
+| `progression` | `value` 0–100. Flag `progression=true` |
+| `recommendations` | `data: string[]`. Flag `recommendations=true`. Not sent for every exercise — use `counter.form_score` for the grade |
+| `exercise_summary` | End of run: `counter`, optional `history[]` |
+
+Outside an exercise (pose-only URL), keypoints stream without extra flags. During an exercise, keypoints need `keypoints=true` + a paid plan.
+
+## Jumps
+
+`jump_analysis` and `air_time_jump`:
+
+| `type` | Notes |
+|---|---|
+| `jump_calibration` | `jump_analysis` only — `cmPerPixel`, `baselineY` |
+| `jump_started` | Push-off |
+| `jump_height` | Live then `final` |
+| `jump_discarded` | `reason`, `userMessage` |
+| `jump_result` | Completed jump N — `jumpHeightCm` |
+| `jump_summary` | Totals + `jumps[]` |
+
+`jump_analysis` requires `userHeightCm`. Missing → `error` `jump_analysis_missing_height`.
+
+## Upload extras
+
+On [upload tracking](/webview/upload) only:
+
+| `type` | Notes |
+|---|---|
+| `export_ready` | `{ url }` when export is enabled and allowed |
+| `keypoints_batch` | Batched keypoints for video |
+
+Upload init messages differ (`loading video`, `%` progress, `Analysis completed`).
+
+## Reference extras
+
+When `reference=` is set, `counter` may include `reference_score`: `{ overallScore, nccScore, dtwScore, timingScore, distScore?, grade }`. See [Reference movement](/webview/reference-movement).
+
+## Related
+
+- [WebView query parameters](/webview/query-params)
+- [SDK events](/reference/events)
+- [Features & plans](/reference/features-plans)
+
+<Note>
+**For LLMs:** WebView events are JSON with `type`. Counter field is `current_count`. SDK typed callback uses `count` / `formScore`. https://docs.posetracker.com/webview/messages
+</Note>

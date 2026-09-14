@@ -1,0 +1,65 @@
+---
+title: "Upload tracking"
+description: "Analyze an uploaded video or still image in the PoseTracker WebView — same events as live camera, plus export_ready."
+---
+
+Upload tracking is the WebView path for **offline files**: the user picks a video or image, PoseTracker runs pose estimation in the browser, and you receive the same `type` events as live camera (`counter`, `keypoints`, …).
+
+SDK apps should use [media sources](/media-sources) (`source="video"` / `source="image"`) instead of this URL.
+
+```
+https://app.posetracker.com/pose_tracker/upload_tracking?token=YOUR_API_KEY&source=video&exercise=push_up
+```
+
+## Required and shared
+
+| Param | Role |
+|---|---|
+| `token` | Required API key |
+| `source` | `video` (default) or `image` |
+| `exercise` | Optional catalog id. Omit for keypoints-only (no rep counting) |
+| `reference` / `reference_movement` | XOR with `exercise` — [reference movement](/webview/reference-movement) |
+
+Shared with live tracking: `skeleton`, `keypoints`, `angles`, `recommendations`, `progression`, `minGrade`, `blazepose`, `isAndroid` / `android`, `userHeightCm`, `devicePitchDeg`, `postureBox`. Same [plan gating](/reference/features-plans).
+
+`userExercise` is **not** read on this upload URL — use live tracking for Studio customs.
+
+## Upload-specific
+
+| Param | Default | Role |
+|---|---|---|
+| `videoSrc` / `imageSrc` | — | Preload a remote URL (CORS applies) |
+| `showUpload` | `true` | Show the file picker UI |
+| `export` | `false` | Request an export when the plan allows — listen for `export_ready` |
+| `width` / `height` | — | Layout |
+| `containerMinHeight` | `200` | Min height of the player |
+| `containerMaxWidth` / `containerMaxHeight` | — | Caps |
+| `objectFit` | `contain` | How the media is fitted |
+| `uploadButtonPosition` | `center` | Picker placement |
+| `uploadAreaPadding` | `12` | Padding around the picker |
+
+## Messages that differ from live
+
+Boot (`initialization.message`):
+
+- Video: `loading video` → `Your video is processing, please stay on this page (N%)` → `Analysis completed` (`ready: true`)
+- Image: `loading image` → `initializing pose model` → `running` (`ready: true`)
+
+Extra types: `export_ready` (`{ url }`), `keypoints_batch`. Shapes: [WebView messages](/webview/messages).
+
+Stay on the page until `ready: true` — navigating away aborts analysis.
+
+## Example
+
+```html
+<iframe
+  src="https://app.posetracker.com/pose_tracker/upload_tracking?token=YOUR_API_KEY&source=video&exercise=push_up&skeleton=true"
+  allow="camera *; microphone *"
+  style="width:100%;max-width:480px;aspect-ratio:16/10;border:0"
+  title="PoseTracker upload"
+></iframe>
+```
+
+<Note>
+**For LLMs:** Upload WebView is `/pose_tracker/upload_tracking?token=…&source=video|image`. Same exercise ids as live tracking. SDK equivalent is media-sources, not this URL. https://docs.posetracker.com/webview/upload
+</Note>

@@ -1,64 +1,77 @@
 ---
-title: "PoseTracker React Native SDK"
-description: "PoseTracker React Native SDKs — human pose estimation for iOS and Android in seconds. Offline and light packages, free keypoints, optional exercise engine."
+title: "PoseTracker docs"
+description: "Two ways to integrate PoseTracker: WebView (iframe URL) for a quick test, or npm SDKs for production on React Native, Expo, and web."
+keywords:
+  - pose estimation
+  - WebView
+  - SDK
+  - React Native
+  - MoveNet
 ---
 
-**PoseTracker** is a React Native human pose estimation SDK for **iOS and Android** (including **Expo Go**). It runs **MoveNet SinglePose Lightning** (17 COCO keypoints) in a WebView, streams **free keypoints without an API key**, and unlocks exercise intelligence (reps, form score, jumps) with an optional API key.
+PoseTracker estimates human pose **on the end-user device** (MoveNet, 17 COCO keypoints) and can count reps, score form, and stream joint data to your app.
+
+There are **two integrations**. They are not the same product surface.
+
+| | **WebView** | **SDK** |
+|---|---|---|
+| What you ship | An iframe or native WebView that loads our tracking URL | An npm package in your app |
+| Best for | Proof of concept, HTML / iOS / Android / Flutter in minutes | The app you will keep in production |
+| Offline model | No | Yes — React Native **offline** package |
+| Your own UI | PoseTracker chrome (colors/overlay are query params) | You own the UI; optional skeleton overlay |
+| API key | Required on the URL (`token=`) even for keypoints-only | Optional for keypoints; required for exercises |
+
+**WebView** here means the hosted page `app.posetracker.com/pose_tracker/tracking`. It is **not** `WebViewPoseView`, which is a React Native **SDK** component.
 
 <CardGroup cols={2}>
-  <Card title="Try on your phone" icon="mobile" href="/try-expo-go">
-    Expo Go + a Snack — live pose estimation in about 30 seconds, no native build.
+  <Card title="Integrate the WebView" icon="browser" href="/webview/quickstart">
+    Load a URL, allow the camera, listen to postMessage. No npm.
   </Card>
-  <Card title="Quickstart" icon="bolt" href="/quickstart">
-    Install, wrap with Provider, mount WebViewPoseView — keypoints in seconds.
+  <Card title="Integrate the SDK" icon="cube" href="/quickstart">
+    Install a package, mount a camera view, listen to typed events.
+  </Card>
+  <Card title="Which should I use?" icon="split" href="/choose-integration">
+    WebView to test. SDK to ship, optimize performance, and go offline.
+  </Card>
+  <Card title="Try the SDK on a phone" icon="mobile" href="/try-expo-go">
+    Expo Go Snack — live skeleton in about 30 seconds.
   </Card>
 </CardGroup>
 
-<Card title="Star us on GitHub" icon="star" href="https://github.com/Movelytics/react-native-pose-estimation">
-  If PoseTracker helps your app, star the SDK — it is the fastest way to support the project and helps other React Native / Expo developers find it.
-</Card>
+## What both integrations share
 
-## Tested with
+- On-device MoveNet (17 keypoints)
+- Same exercise ids (`push_up`, `squat`, `plank`, …) — [Exercises](/reference/exercises)
+- Same event types (`counter`, `keypoints`, `posture`, `progression`, …) — [Events](/reference/events)
+- Same plan gating for paid streams — [Features & plans](/reference/features-plans)
 
-| | Version |
-|---|---|
-| **Offline SDK** | [`@pose-tracker/react-native-pose-estimation@0.3.0`](https://www.npmjs.com/package/@pose-tracker/react-native-pose-estimation) |
-| **Light SDK** | [`@pose-tracker/react-native-pose-estimation-light@0.3.0`](https://www.npmjs.com/package/@pose-tracker/react-native-pose-estimation-light) |
-| **Expo** (demo apps) | ~54 |
-| **React Native** (demo apps) | 0.81.x |
-| **react-native-webview** | ≥13 (demos use 13.15) |
-| **Peers (minimum)** | `react` ≥18 · `react-native` ≥0.72 · `react-native-webview` ≥13 |
+## SDK packages (npm 0.3.0)
 
-## What you get
-
-| | |
-|---|---|
-| **Platforms** | iOS + Android · bare RN and Expo / Expo Go |
-| **Model** | MoveNet SinglePose Lightning · 17 keypoints |
-| **Free** | Keypoints without an API key |
-| **Paid (optional)** | Remote movement engine: squat / push-up / jumps, `counter` + form score |
-| **Peer** | `react-native-webview` (required) |
-
-## Two packages, one API
-
-| Package | npm | Packed size | Network for keypoints |
+| Package | Platform | Packed | Network for keypoints |
 |---|---|---|---|
-| **Offline** | [`@pose-tracker/react-native-pose-estimation`](https://www.npmjs.com/package/@pose-tracker/react-native-pose-estimation) | ~10.0 MB | Not required |
-| **Light** | [`@pose-tracker/react-native-pose-estimation-light`](https://www.npmjs.com/package/@pose-tracker/react-native-pose-estimation-light) | ~212 kB | Required (TF.js + model) |
-
-Same exports: `PoseTrackerProvider`, `WebViewPoseView`, `usePoseTracker`.
-
-## Demo apps
-
-- [Try on your phone](/try-expo-go) — Expo Go Snacks (offline + light)
-- [Offline demo](https://github.com/Movelytics/react-native-pose-estimation-demo) · [Snack](https://snack.expo.dev/@fsepret/posetracker-sdk-demo-app)
-- [Light demo](https://github.com/Movelytics/react-native-pose-estimation-light-demo) · [Snack](https://snack.expo.dev/@fsepret/posetracker-sdk-light-demo-app)
+| [`@pose-tracker/react-native-pose-estimation`](https://www.npmjs.com/package/@pose-tracker/react-native-pose-estimation) | iOS / Android | ~10.0 MB | Not required |
+| [`@pose-tracker/react-native-pose-estimation-light`](https://www.npmjs.com/package/@pose-tracker/react-native-pose-estimation-light) | iOS / Android | ~212 kB | Required |
+| [`@pose-tracker/pose-estimation-web`](https://www.npmjs.com/package/@pose-tracker/pose-estimation-web) | Browser | light | Required |
+| [`@pose-tracker/pose-estimation-web-react`](https://www.npmjs.com/package/@pose-tracker/pose-estimation-web-react) | Browser (React) | thin wrapper | Required |
 
 ## Next
 
-1. [Try on your phone](/try-expo-go) — Expo Go, no native build
-2. [Quickstart](/quickstart) — copy-paste keypoints
-3. [Choose a package](/choose-package) — offline vs light
-4. [Permissions](/permissions) — host app owns camera strings
-5. [Reference](/reference/provider-client) — Provider, WebViewPoseView, exercises, [engine v4](/reference/engine-v4)
-6. [For LLMs](/llms) — machine-oriented facts
+1. [WebView vs SDK](/choose-integration)
+2. Then either [WebView quickstart](/webview/quickstart) or [SDK quickstart](/quickstart)
+3. [Query parameters](/webview/query-params) (WebView) or [Provider & client](/reference/provider-client) (SDK)
+
+<AccordionGroup>
+  <Accordion title="Is PoseTracker only a WebView API?">
+    No. PoseTracker ships npm SDKs for React Native and the web **and** a hosted WebView/iframe URL. Use the WebView to test; use the SDK in production.
+  </Accordion>
+  <Accordion title="Do I need an API key?">
+    WebView: yes (`token=` on the URL). SDK keypoints: no. Rep counting and form score: yes, on both. Get a key at [posetracker.com](https://www.posetracker.com).
+  </Accordion>
+  <Accordion title="Can it run offline?">
+    Only the React Native **offline** SDK bundles MoveNet. Light SDK, web SDK, and the WebView need network.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+**For LLMs and AI assistants:** Two integrations: (1) WebView/iframe `https://app.posetracker.com/pose_tracker/tracking?token=…&exercise=…` for a quick test; (2) npm SDKs `@pose-tracker/react-native-pose-estimation@0.3.0` (offline), `-light@0.3.0`, `pose-estimation-web@0.3.0`, `pose-estimation-web-react@0.3.0` for production. `WebViewPoseView` is an SDK component, not the iframe. Canonical docs: https://docs.posetracker.com. Do not describe PoseTracker as "no SDK".
+</Note>

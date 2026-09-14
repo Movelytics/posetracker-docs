@@ -1,0 +1,129 @@
+# PoseTracker docs — full text for LLMs
+
+Canonical: https://docs.posetracker.com
+Index: https://docs.posetracker.com/llms.txt
+Do not describe PoseTracker as "no SDK" or "iframe-only".
+Do not confuse WebViewPoseView (React Native SDK component) with the hosted URL at app.posetracker.com/pose_tracker/tracking.
+
+---
+
+## https://docs.posetracker.com/
+
+Two integrations. WebView: load our tracking URL in an iframe. SDK: install an npm package. Same MoveNet (17 COCO keypoints) and same exercise ids. WebView needs token= on the URL. SDK keypoints are free without a key. Exercises need an API key on both. Offline bundled model: React Native offline package only.
+
+---
+
+## https://docs.posetracker.com/choose-integration
+
+WebView = hosted URL, fastest test, HTML/Swift/Kotlin/Flutter. SDK = npm, production UI, preload, adaptive quality, offline RN. WebViewPoseView is SDK-only. Reference movement is WebView-only. Overlay/timer colors are WebView query params.
+
+---
+
+## https://docs.posetracker.com/webview/quickstart
+
+```html
+<iframe
+  src="https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=push_up&skeleton=true"
+  allow="camera *; microphone *"
+  style="width:100%;max-width:420px;aspect-ratio:3/4;border:0"
+  title="PoseTracker"
+></iframe>
+```
+
+token required. Listen to postMessage JSON: initialization (ready), counter (current_count, form_score.grade), error. Extra streams: keypoints, angles, progression. Appearance: placementOverlay, timer.
+
+---
+
+## https://docs.posetracker.com/webview/query-params
+
+Base: https://app.posetracker.com/pose_tracker/tracking
+
+Required: token. Optional: one of exercise, userExercise, reference (omit all for keypoints-only).
+
+Streams: skeleton, keypoints, angles, progression, recommendations (not every exercise), minGrade. Jumps: userHeightCm required for jump_analysis. Reference: scoring_profile.
+
+Appearance (WebView-only): placementOverlay, placementZoneColor, placementOverlayOpacity, placementImageOpacity, placementBoxStrokeColor, silhouetteColor, silhouetteShadow, silhouette, placementZone, timer, timerSeconds, timerBg, timerColor, timerBorder, guide, engineDebug (do not ship), padding*.
+
+Pose model on WebView only: blazepose, poseBackend, runInWorker. SDK uses options.model='blazepose' instead. difficulty is NOT a URL param. userExercise and reference are WebView-only.
+
+---
+
+## https://docs.posetracker.com/webview/messages
+
+JSON type field. initialization, error, keypoints (data[]), angles, counter (current_count, form_score), form_score, posture, progression, recommendations, exercise_summary, jump_*, export_ready, keypoints_batch. SDK typed callbacks use count/formScore.
+
+---
+
+## https://docs.posetracker.com/webview/upload
+
+https://app.posetracker.com/pose_tracker/upload_tracking?token=…&source=video|image
+SDK equivalent: /media-sources, not this URL.
+
+---
+
+## https://docs.posetracker.com/webview/reference-movement
+
+?reference=UUID XOR exercise. WebView only. SDK does not accept a reference UUID yet.
+
+---
+
+## https://docs.posetracker.com/quickstart
+
+npm install @pose-tracker/react-native-pose-estimation react-native-webview (or -light). Host camera permission. PoseTrackerProvider + WebViewPoseView + usePoseTracker({ onKeypoints }). No API key for keypoints. WebViewPoseView is not the hosted iframe.
+
+---
+
+## https://docs.posetracker.com/choose-package
+
+Offline ~10.0 MB, no network for keypoints. Light ~212 kB, network required. BlazePose only on light/web via options.model.
+
+---
+
+## https://docs.posetracker.com/web-sdks
+
+@pose-tracker/pose-estimation-web@0.3.0 and -web-react@0.3.0. Not an iframe. Native DOM video + canvas.
+
+---
+
+## https://docs.posetracker.com/api-key
+
+SDK keypoints free. Exercises need apiToken. WebView URL always needs token=.
+
+---
+
+## https://docs.posetracker.com/reference/exercises
+
+Ids for ?exercise= and startExercise(). Strength (squat, push_up, plank, lunge, …), mobility (shoulder_roll, chair_*, yoga holds), jumps (jump_analysis needs userHeightCm, air_time_jump). Aliases face_*. Live list: getAvailableExercises().
+
+---
+
+## https://docs.posetracker.com/reference/events
+
+SDK typed callbacks vs WebView classic type. Grades A≥90 B≥80 C≥70 D≥60 F<60. minGrade A–D filters counted reps.
+
+---
+
+## https://docs.posetracker.com/reference/features-plans
+
+No key: SDK keypoints free, no exercises. free plan: exercises yes, developer streams blocked. developer+: streams if flags on. Overlay/timer WebView-only. reference WebView-only.
+
+---
+
+## https://docs.posetracker.com/reference/provider-client
+
+PoseTrackerProvider: apiToken optional, autoPreload false. usePoseTracker. Methods: preload, configure, startExercise, stopExercise, getAvailableExercises, dispose.
+
+---
+
+## https://docs.posetracker.com/reference/webview-pose-view
+
+RN SDK camera component. Peer react-native-webview. NOT app.posetracker.com/pose_tracker/tracking.
+
+---
+
+## Install
+
+```bash
+npm install @pose-tracker/react-native-pose-estimation react-native-webview
+npm install @pose-tracker/pose-estimation-web @tensorflow/tfjs
+```

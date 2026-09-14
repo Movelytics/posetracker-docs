@@ -1,13 +1,11 @@
 ---
 title: "API key & exercises"
-description: "Optional paid movement engine — reps, form score, jumps. Keypoints stay free without a key."
+description: "Optional paid movement engine — reps, form score, jumps. SDK keypoints stay free without a key. WebView tracking URL always needs token."
 ---
 
-Keypoints work **without** an API key. Pass `apiToken` when you want the remote movement engine (exercises, counter, form score, jumps, plan-gated features).
+On the **SDK**, keypoints work **without** an API key. Pass `apiToken` when you want the remote movement engine (exercises, counter, form score, jumps, plan-gated features). The **WebView** tracking URL always requires `token=` — [WebView quickstart](/webview/quickstart).
 
-<Tip>
-This page is optional. Most integrators start with [Quickstart](/quickstart) keypoints only.
-</Tip>
+Get a key at [posetracker.com](https://www.posetracker.com).
 
 ## Provider with token
 
@@ -36,10 +34,7 @@ function CameraScreen() {
     },
   });
 
-  // Lobby: model warm-up only (no camera permission)
-  // await preload();
-  // Camera screen: start an exercise when ready
-  // startExercise('squat');
+  // startExercise('push_up');
 
   return (
     <WebViewPoseView
@@ -51,39 +46,33 @@ function CameraScreen() {
 }
 ```
 
-Same pattern works with `@pose-tracker/react-native-pose-estimation-light`.
+Same pattern with `-light` and with the [web SDKs](/web-sdks) (`createPoseTracker({ apiToken })`).
 
-## Conceptual web parity
-
-```
-https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=squat&skeleton=true
-```
-
-V4 catalog (opt-in, same default remains V3):
+## WebView equivalent
 
 ```
-https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=shoulder_roll&engine=v4
+https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=push_up&skeleton=true
 ```
+
+Overlay and timer colors: [WebView query parameters](/webview/query-params).
 
 ## Modes
 
 | Mode | When | Events |
 |---|---|---|
-| `keypoints-only` | No valid API key / session | Keypoints |
+| `keypoints-only` | SDK with no valid API key | Keypoints |
 | `full-engine` | Handshake succeeded + engine loaded | Counter, form score, angles, … |
 
 ## Watermark
 
-Shown for keyless and free plans. Hidden for paid plans (`developer`, `company`, `enterprise`, …). Override with `showWatermark` on `WebViewPoseView` if needed.
+Shown for keyless and free plans. Hidden for paid plans (`developer`, `company`, `enterprise`, …). Override with `showWatermark` on `WebViewPoseView`.
 
 ## Reference
 
-- [Exercises](/reference/exercises) — FSM catalog, V4 opt-in, aliases, jumps, `StartExerciseOptions`
-- [Engine v4](/reference/engine-v4) — `engine: 'v4'` at Provider / iframe `?engine=v4`
-- [Features & plans](/reference/features-plans) — gating matrix, `minGrade`, watermark
-- [Events](/reference/events) — `onCounter`, posture, jump_* shapes
-- [Provider & client](/reference/provider-client) — `configure`, `startExercise`, options
+- [Exercises](/reference/exercises)
+- [Features & plans](/reference/features-plans)
+- [Events](/reference/events)
 
-## Get a key
-
-Product site: [posetracker.com](https://www.posetracker.com)
+<Note>
+**For LLMs:** SDK keypoints are free; exercises need `apiToken`. WebView URL always needs `token`. https://docs.posetracker.com/api-key
+</Note>

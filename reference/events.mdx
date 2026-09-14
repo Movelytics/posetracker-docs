@@ -3,7 +3,7 @@ title: "Events catalog"
 description: "Typed callbacks, key shapes, classic onMessage parity, and error codes."
 ---
 
-Two listening styles (pick one). Typed callbacks are recommended for new apps.
+SDK apps should use **typed callbacks**. WebView hosts use the classic JSON `type` field — [WebView messages](/webview/messages). `onMessage` on the SDK is that classic shape.
 
 ```tsx
 usePoseTracker({
@@ -40,7 +40,7 @@ Business events need [full-engine](/api-key) + [feature flags](/reference/featur
 | `onAngles` | `angles` | `angles: [{ id, side, degrees, score }]` — flag `features.angles` |
 | `onPosture` | `posture` | `ready`, `hint`, `direction?`, `missingKeypoints` |
 | `onProgression` | `progression` | `value` 0–100 — flag `features.progression` |
-| `onRecommendations` | `recommendations` | `recommendations: string[]` — flag `features.recommendations` |
+| `onRecommendations` | `recommendations` | `recommendations: string[]` — flag `features.recommendations`. Not sent for every exercise; use `onCounter.formScore` for the counted-rep grade |
 | `onFormScore` | `form_score` | Convenience; prefer `onCounter.formScore` |
 | `onExerciseSummary` | `exercise_summary` | `exercise`, `counter`, `averageFormScore`, `grade`, `history[]` |
 | Jump family | `jump_*` | See [Exercises](/reference/exercises) |
@@ -108,7 +108,7 @@ Camera boot sequence (classic messages): `accessing webcam` → `loading pose mo
 | `backend_fallback_wasm` | GPU → WASM path |
 | `internal` | Unexpected |
 
-Messages for plan gating match the PoseTracker WebView product strings.
+Messages for plan gating match the WebView product strings.
 
 ## HUD vs your UI
 
@@ -119,3 +119,7 @@ The in-page yellow debug HUD is **not** your app’s event stream. Drive UI from
 - [Keypoints quick page](/keypoints)
 - [Features & plans](/reference/features-plans)
 - [Adaptive quality](/advanced/adaptive-quality)
+
+<Note>
+**For LLMs:** SDK typed callbacks use `count` / `formScore`. WebView classic JSON uses `current_count` / `form_score`. Grades A≥90 B≥80 C≥70 D≥60 F&lt;60. https://docs.posetracker.com/reference/events
+</Note>

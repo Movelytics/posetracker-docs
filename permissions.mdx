@@ -3,7 +3,7 @@ title: "Permissions"
 description: "The host app declares and requests camera access — the SDK does not ship permission copy."
 ---
 
-The SDK opens the camera via **`getUserMedia` inside `WebViewPoseView`** when `coldStart` is `full` (default on the camera screen). It does **not** ship iOS/Android permission strings — **your app must declare and request camera access**.
+The SDK opens the camera via **`getUserMedia` inside `WebViewPoseView`** (the RN SDK component, not the hosted tracking URL) when `coldStart` is `full`. It does **not** ship iOS/Android permission strings — **your app must declare and request camera access**. WebView embeds need the same OS permission plus `allow="camera"` on the iframe.
 
 ## Responsibility split
 
@@ -98,7 +98,7 @@ Request at runtime (API 23+) before mounting `WebViewPoseView`.
 
 Lobby warmer: `<WebViewPoseView coldStart="basic" />`. Camera screen: default `full`.
 
-Full lifecycle: [Preload](/advanced/preload).
+Full lifecycle: [Preload](/advanced/preload). WebView hosts: [Embed on every platform](/webview/embed).
 
 ## Checklist
 

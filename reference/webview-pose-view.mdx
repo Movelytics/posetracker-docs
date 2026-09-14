@@ -1,10 +1,9 @@
 ---
-title: "WebViewPoseView"
-description: "Full props table for the camera / warm-up WebView surface."
+title: "WebViewPoseView (React Native SDK)"
+description: "SDK camera component props — not the hosted iframe. Boot UI, camera/video/image, skeleton overlay."
 ---
 
-`WebViewPoseView` mounts the MoveNet WebView page: boot UI, pose input
-(camera / uploaded video / still image), skeleton overlay, and pose streaming.
+`WebViewPoseView` is the **React Native SDK** camera surface. It runs MoveNet inside `react-native-webview`. It is **not** `https://app.posetracker.com/pose_tracker/tracking`. For that embed, see [WebView quickstart](/webview/quickstart).
 
 Must be used under `PoseTrackerProvider`. Peer: `react-native-webview`.
 
@@ -98,3 +97,4 @@ Override with `showWatermark`. Plan upgrades after `configure()` update the mark
 - [Permissions](/permissions) — host must request camera before `coldStart="full"`
 - [Preload lifecycle](/advanced/preload) — hidden `basic` warmer pattern
 - [Provider & client](/reference/provider-client)
+- [WebView vs SDK](/choose-integration)

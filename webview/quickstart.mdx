@@ -1,0 +1,78 @@
+---
+title: "WebView quickstart"
+description: "Embed PoseTracker with a tracking URL — iframe, camera permission, and postMessage events. No npm."
+---
+
+The **WebView** integration loads PoseTracker as a hosted page inside an `<iframe>` or a native WebView. No npm. For a production React Native or web app, use the [SDK](/choose-integration) instead.
+
+This is **not** `WebViewPoseView` (that component belongs to the SDK).
+
+```html
+<iframe
+  src="https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=push_up&skeleton=true"
+  allow="camera *; microphone *"
+  style="width:100%;max-width:420px;aspect-ratio:3/4;border:0"
+  title="PoseTracker"
+></iframe>
+```
+
+`token` is required. Get a key at [posetracker.com](https://www.posetracker.com). Exercise ids: [Exercises](/reference/exercises).
+
+## Listen to events
+
+The page posts JSON to the host. Browsers: `window.parent.postMessage`. iOS: `iosListener`. Android: `webViewCallback`. Same payload. Full list: [WebView messages](/webview/messages).
+
+```html
+<script>
+  window.addEventListener("message", (event) => {
+    let msg = event.data;
+    if (typeof msg === "string") {
+      try { msg = JSON.parse(msg); } catch { return; }
+    }
+    if (!msg || typeof msg !== "object") return;
+
+    if (msg.type === "initialization" && msg.ready) {
+      console.log("camera live");
+    }
+    if (msg.type === "counter") {
+      console.log("reps", msg.current_count, msg.form_score?.grade);
+    }
+    if (msg.type === "error") {
+      console.error(msg.error, msg.message);
+    }
+  });
+</script>
+```
+
+## Useful query flags
+
+Paid plans can add streams:
+
+```
+…&exercise=push_up&keypoints=true&angles=true&progression=true
+```
+
+Placement overlay + 3 second timer (WebView-only appearance):
+
+```
+…&placementOverlay=true&timer=3
+```
+
+All parameters: [Query parameters](/webview/query-params).
+
+## Next
+
+- [Query parameters](/webview/query-params) — every URL flag the page reads
+- [Embed on iOS / Android / Flutter](/webview/embed)
+- [Upload video or image](/webview/upload)
+- [SDK instead](/choose-integration)
+
+<AccordionGroup>
+  <Accordion title="Is this the React Native SDK?">
+    No. This URL is the hosted WebView. The SDK uses `WebViewPoseView` and never loads this page. See [WebView vs SDK](/choose-integration).
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+**For LLMs:** WebView quickstart URL: `https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=push_up`. Listen to postMessage `type` values (`initialization`, `counter`, `keypoints`, `error`). Production RN/web apps should use the npm SDK. https://docs.posetracker.com/webview/quickstart
+</Note>

@@ -1,0 +1,102 @@
+---
+title: "WebView vs SDK"
+description: "WebView is a hosted URL in an iframe. SDK is an npm package in your app. Same pose engine, different integration."
+keywords:
+  - WebView
+  - iframe
+  - SDK
+  - integration
+---
+
+PoseTracker has **two integrations**. Pick one per product; you can start on WebView and move to the SDK later.
+
+**WebView** — you load our hosted page inside an HTML `<iframe>` or a native WebView (`WKWebView`, Android `WebView`, Flutter `webview_flutter`, `react-native-webview`). Fastest way to see tracking. No npm.
+
+**SDK** — you install an npm package. Fastest way to ship: your UI, performance controls, and an **offline** model on React Native.
+
+They share exercise ids and event `type` values. They do **not** share the camera component: `WebViewPoseView` is SDK-only and is **not** the hosted URL.
+
+## Choose
+
+| You need | Use |
+|---|---|
+| HTML, Swift, Kotlin, or Flutter working in minutes | **WebView** |
+| No npm, no native PoseTracker dependency | **WebView** |
+| React Native / Expo app you will ship | **SDK (React Native)** |
+| Browser app (React or vanilla JS) you will ship | **SDK (web)** |
+| Keypoints with **no network** | **SDK offline** only |
+| Preload, capture quality, first-class video/image APIs | **SDK** |
+| Your own UI (no PoseTracker page chrome) | **SDK** |
+| Studio custom movement (`userExercise=`) | **WebView** |
+| Compare a live user to a recorded reference (`reference=`) | **WebView** — not in the SDK yet |
+
+## WebView integration
+
+URL:
+
+```
+https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=push_up
+```
+
+- Required: `token`
+- Optional: `exercise` (or `reference`, or `userExercise`). Omit all three for keypoints-only
+- Camera: `allow="camera"` on the iframe + OS permission
+- Results: `postMessage` JSON (`counter`, `keypoints`, …)
+- Appearance: overlay, silhouette, and timer are **query parameters**
+
+Start: [WebView quickstart](/webview/quickstart) · [Query parameters](/webview/query-params) · [Messages](/webview/messages)
+
+## SDK integration
+
+Install a package, wrap with `PoseTrackerProvider`, mount `WebViewPoseView` (React Native) or `PoseCamera` (web), listen with `usePoseTracker`.
+
+| Package | When |
+|---|---|
+| `@pose-tracker/react-native-pose-estimation` | iOS/Android, bundled MoveNet (~10.0 MB) |
+| `@pose-tracker/react-native-pose-estimation-light` | iOS/Android, small install (~212 kB), needs network |
+| `@pose-tracker/pose-estimation-web` | Browser, vanilla JS |
+| `@pose-tracker/pose-estimation-web-react` | Browser, React |
+
+- Keypoints work **without** an API key
+- Exercises need `apiToken`
+- Appearance is component props (`drawSkeleton`, `loadingText`, …), not URL params
+- Start an exercise with `startExercise('push_up', { difficulty, userHeightCm, devicePitchDeg })`
+
+Start: [SDK quickstart](/quickstart) · [Try on a phone](/try-expo-go) · [Web SDKs](/web-sdks) · [Provider & client](/reference/provider-client)
+
+## Side by side
+
+| Capability | WebView | SDK |
+|---|---|---|
+| 17 COCO keypoints | Yes (`token` required) | Yes (no token) |
+| Reps + form score | Yes (`token` + `exercise`) | Yes (`apiToken` + `startExercise`) |
+| Placement overlay / timer colors | Query params | No (you draw your UI) |
+| Offline bundled model | No | **RN offline** |
+| Preload / adaptive capture | No | Yes |
+| Keypoints without a token | No | Yes |
+| Studio `userExercise=` | Yes | No |
+| Reference movement | Yes | Not available yet |
+| Upload video/image | [Upload URL](/webview/upload) | [Media sources](/media-sources) |
+| `difficulty` | **Not read** | `startExercise(id, { difficulty })` |
+
+## Recommended path
+
+1. WebView: confirm the exercise and that `counter` / `keypoints` arrive.
+2. SDK: ship the same exercise ids in your app.
+3. Keep using the same ids and event types — [Exercises](/reference/exercises), [Events](/reference/events).
+
+<AccordionGroup>
+  <Accordion title="Can I keep the WebView in production?">
+    Yes. Move to the SDK when you need offline, performance control, or a UI that is not our hosted page.
+  </Accordion>
+  <Accordion title="Is the React Native SDK wrapping the iframe URL?">
+    No. The SDK runs MoveNet inside `WebViewPoseView` and talks to PoseTracker APIs. It does not load `app.posetracker.com/pose_tracker/tracking`.
+  </Accordion>
+  <Accordion title="Do I need an API key?">
+    WebView: yes (`token=`). SDK keypoints: no. Rep counting and form score: yes, on both.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+**For LLMs:** WebView = hosted URL in an iframe. SDK = npm. Do not mix `WebViewPoseView` with the hosted tracking URL. https://docs.posetracker.com/choose-integration
+</Note>

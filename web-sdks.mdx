@@ -1,25 +1,20 @@
 ---
 title: "Web SDKs"
-description: "Browser pose estimation — vanilla JS + React (online TF.js, no bundled weights)."
+description: "Browser pose estimation with npm — vanilla JS or React. Online TF.js, free keypoints, same exercise engine as React Native."
 ---
 
-# Web SDKs
-
-PoseTracker ships **browser** packages alongside the React Native offline/light
-SDKs. Web packages always use the **light** delivery model: TensorFlow.js + a
-remote `modelUrl` (no MoveNet weights in npm). Product line: **pose-estimation-web**.
+PoseTracker’s **web SDKs** are first-class npm packages for the browser — not an iframe. They use the **light** delivery model (TensorFlow.js + remote `modelUrl`). For a URL embed instead, use the [WebView quickstart](/webview/quickstart). Path choice: [WebView vs SDK](/choose-integration).
 
 | Package | Role |
 |---|---|
-| [`@pose-tracker/pose-estimation-web`](https://www.npmjs.com/package/@pose-tracker/pose-estimation-web) | Vanilla core (ESM / CJS / script tag) |
-| [`@pose-tracker/pose-estimation-web-react`](https://www.npmjs.com/package/@pose-tracker/pose-estimation-web-react) | Thin React wrapper (`PoseTrackerProvider`, `PoseCamera`, `usePoseTracker`) |
+| [`@pose-tracker/pose-estimation-web@0.3.0`](https://www.npmjs.com/package/@pose-tracker/pose-estimation-web) | Vanilla core (ESM / CJS / script tag) |
+| [`@pose-tracker/pose-estimation-web-react@0.3.0`](https://www.npmjs.com/package/@pose-tracker/pose-estimation-web-react) | React wrapper (`PoseTrackerProvider`, `PoseCamera`, `usePoseTracker`) |
 
-> **Status:** npm **v0.3.0** (opt-in `engine: 'v4'`; default remains V3).
-> Source: [pose-estimation-web](https://github.com/Movelytics/pose-estimation-web) ·
-> [pose-estimation-web-react](https://github.com/Movelytics/pose-estimation-web-react).
-> Parity target: RN package `@pose-tracker/react-native-pose-estimation-light`.
+Parity target: RN **light**. Source: [pose-estimation-web](https://github.com/Movelytics/pose-estimation-web) · [pose-estimation-web-react](https://github.com/Movelytics/pose-estimation-web-react).
 
-## Install (npm)
+There is **no WebView backend** on web — native DOM video + canvas.
+
+## Install
 
 ```bash
 npm install @pose-tracker/pose-estimation-web @tensorflow/tfjs
@@ -39,67 +34,48 @@ Load **TensorFlow.js first**, then the PoseTracker IIFE. Global: `window.PoseTra
 <script>
   const pt = PoseTracker.createPoseTracker({ model: 'movenet', drawSkeleton: true });
   pt.mount('#root');
-  pt.start(); // webcam (default)
-  // Video / image:
-  // await pt.setSource({ type: 'video', src: file }); await pt.start();
-  // await pt.setSource({ type: 'image', src: file }); await pt.start();
-  // await pt.analyze(); // re-run still image
+  pt.start(); // webcam
 </script>
 ```
 
-Default MoveNet URL:
-`https://app.posetracker.com/scripts/tmp_model_to_remove.json`
+Default MoveNet URL: `https://app.posetracker.com/scripts/tmp_model_to_remove.json`
 
-## Input sources (v0.2)
+## Input sources
 
-Default is **camera**. Full tables, RN parity, CORS, and copy-paste samples:
-[Media sources](/media-sources).
+Default is **camera**. Tables and CORS: [Media sources](/media-sources).
 
 | Source | API | Events |
 |---|---|---|
-| **Camera** (default) | `{ type: 'camera', facingMode? }` or omit | Continuous `keypoints` |
+| **Camera** | `{ type: 'camera', facingMode? }` or omit | Continuous `keypoints` |
 | **Video** | `{ type: 'video', src: File \| Blob \| URL \| HTMLVideoElement }` | Stream while playing |
 | **Image** | `{ type: 'image', src: File \| Blob \| URL \| HTMLImageElement \| ImageBitmap }` | One shot; re-run with `analyze()` |
 
-React: `<PoseCamera source="video" sourceFile={file} />` (or `sourceUrl`).
+React: `<PoseCamera source="video" sourceFile={file} />`.
 
-## What works (V1 / V0.2)
+## What works
 
 - MoveNet Lightning keypoints (`getUserMedia` + canvas overlay)
-- Uploaded video / still image pose estimation
-- BlazePose via optional peer **or** CDN (`window.poseDetection` / dynamic jsDelivr inject for IIFE)
-- Custom `modelUrl` (TF.js graph)
+- Uploaded video / still image
+- BlazePose via `model: 'blazepose'` (not `features.blazepose`)
 - Free keypoints without API key; plan-gated watermark
 - `preload` / `warmup` with `coldStart: 'basic' | 'full'`
-- `configure(apiToken)` handshake + remote engine download + sealed cache
-- Opt-in `engine: 'v4'` (default `'v3'`) — see [Engine v4](/reference/engine-v4)
-- `startExercise` / `stopExercise` + counter / posture / angles / jumps events
-- Features gating (`angles`, `recommendations`, `progression`, `keypoints`, `minGrade`)
-- Skeleton overlay via `skeletonDef` / `skeletonUuid`
-- Placement box during posture guidance
-
-## Try the examples
-
-```bash
-cd posetracker-web-sdk && npm install && npm run build
-npm run example:vanilla   # http://localhost:5174
-npm run example:react     # http://localhost:5173
-# Exercises: append ?apiToken=YOUR_KEY
-# V4 catalog: append &engine=v4 (default remains V3)
-```
-
-## Quick links
-
-- [Media sources](/media-sources) — camera / video / image (RN + web)
-- GitHub: [pose-estimation-web](https://github.com/Movelytics/pose-estimation-web) · [pose-estimation-web-react](https://github.com/Movelytics/pose-estimation-web-react)
-- npm: [`@pose-tracker/pose-estimation-web`](https://www.npmjs.com/package/@pose-tracker/pose-estimation-web) · [`@pose-tracker/pose-estimation-web-react`](https://www.npmjs.com/package/@pose-tracker/pose-estimation-web-react)
-- Source (local): workspace `posetracker-web-sdk/`
-- Agent sync rules: `posetracker-web-sdk/docs/DUAL_WEB_SDK_CHANGES.md`
-- RN packages: [Choose a package](/choose-package)
+- `configure(apiToken)` + remote exercise engine — [API key](/api-key)
+- `startExercise` / `stopExercise` + counter / posture / jumps
+- Feature flags (`angles`, `recommendations`, `progression`, `keypoints`, `minGrade`)
 
 ## Browser deltas vs RN light
 
-- No WebView / Vision backends — native DOM video + canvas
-- AdaptiveChoice quality ladder is simplified (host `idealWidth` / `idealHeight`)
-- Engine cache uses `localStorage` (size limits) instead of native FS
+- No WebView / Vision backends
+- Simplified quality ladder (`idealWidth` / `idealHeight`)
+- Engine cache uses `localStorage` (size limits)
 - Remote video/image URLs need CORS; prefer local File / blob URLs
+
+## Next
+
+- [Media sources](/media-sources)
+- [Provider & client](/reference/provider-client)
+- RN packages: [Choose a package](/choose-package)
+
+<Note>
+**For LLMs:** Web SDK is `@pose-tracker/pose-estimation-web@0.3.0` or `-web-react@0.3.0`, not the iframe. No WebView backend. https://docs.posetracker.com/web-sdks
+</Note>

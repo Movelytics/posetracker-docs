@@ -1,14 +1,14 @@
 ---
-title: "Quickstart"
-description: "Expo + WebView keypoints in seconds — no API key required."
+title: "SDK quickstart"
+description: "Install a PoseTracker React Native SDK, mount WebViewPoseView, get 17 free keypoints — no API key."
 ---
 
-Get **17 keypoints per frame** with Expo (or bare React Native), `react-native-webview`, and no API key.
+Get **17 keypoints per frame** in Expo or bare React Native with `react-native-webview` and **no API key**. This is the **SDK** path. For a URL-only test, use the [WebView quickstart](/webview/quickstart). Unsure? [WebView vs SDK](/choose-integration).
 
-Want to see it on a phone first? [Try in Expo Go](/try-expo-go) — download Expo Go, open a Snack, scan the QR.
+Want it on a phone first? [Try in Expo Go](/try-expo-go).
 
 <Info>
-Keypoints-only mode is free. The **offline** package works without network; **light** needs network to load TF.js + MoveNet. See [Choose a package](/choose-package).
+Keypoints-only is free. The **offline** package works without network; **light** needs network for TF.js + MoveNet. See [Choose a package](/choose-package). `WebViewPoseView` is the SDK camera surface — not the hosted iframe.
 </Info>
 
 ## 1. Install
@@ -28,11 +28,11 @@ npx expo install react-native-webview expo-camera
   </Tab>
 </Tabs>
 
-`expo-camera` is only for the **permission API** — PoseTracker still captures inside its WebView.
+`expo-camera` is only for the **permission API**. PoseTracker still captures inside `WebViewPoseView`.
 
 ## 2. Camera permission (host app)
 
-Declare and request camera access in your app before mounting the camera screen. Minimal Expo snippet — full guide: [Permissions](/permissions).
+Declare and request camera access before mounting the camera screen. Full guide: [Permissions](/permissions).
 
 ```json
 {
@@ -57,7 +57,7 @@ Declare and request camera access in your app before mounting the camera screen.
 }
 ```
 
-## 3. Provider + WebView + keypoints
+## 3. Provider + WebViewPoseView + keypoints
 
 <Tabs>
   <Tab title="Offline">
@@ -79,7 +79,6 @@ function App() {
 function CameraScreen() {
   usePoseTracker({
     onKeypoints: (e) => {
-      // 17 keypoints every frame — no API key
       console.log(e.keypoints.length, e.score);
     },
   });
@@ -133,22 +132,26 @@ function CameraScreen() {
 ## What just happened
 
 1. `PoseTrackerProvider` creates the client (keypoints-only without `apiToken`).
-2. `WebViewPoseView` boots MoveNet in a WebView and opens the **camera** by default (`coldStart` defaults to `full` on the camera screen).
-3. `usePoseTracker({ onKeypoints })` receives typed `KeypointsEvent` frames (`keypoints`, `score`, `timestampMs`).
+2. `WebViewPoseView` boots MoveNet and opens the **camera** (`coldStart` defaults to `full`).
+3. `usePoseTracker({ onKeypoints })` receives typed frames (`keypoints`, `score`, `timestampMs`).
 
-Uploaded **video** / **image** instead of the webcam: see [Media sources](/media-sources).
-
-## Try a demo
-
-- [Try on your phone](/try-expo-go)
-- [Offline demo](https://github.com/Movelytics/react-native-pose-estimation-demo) · [Snack](https://snack.expo.dev/@fsepret/posetracker-sdk-demo-app)
-- [Light demo](https://github.com/Movelytics/react-native-pose-estimation-light-demo) · [Snack](https://snack.expo.dev/@fsepret/posetracker-sdk-light-demo-app)
+Browser instead of RN? [Web SDKs](/web-sdks). Uploaded video/image: [Media sources](/media-sources).
 
 ## Next
 
 - [Listen to events](/keypoints)
-- [Media sources](/media-sources) (camera / video / image)
-- [Optional API key + exercise](/api-key)
-- [Provider & client](/reference/provider-client) · [WebViewPoseView](/reference/webview-pose-view)
-- [Preload lifecycle](/advanced/preload)
-- [For LLMs](/llms)
+- [API key + exercises](/api-key)
+- [Preload](/advanced/preload) · [Adaptive quality](/advanced/adaptive-quality)
+
+<AccordionGroup>
+  <Accordion title="Why is there a WebView if this is an SDK?">
+    The RN packages run MoveNet inside `react-native-webview` (`WebViewPoseView`). That is not `app.posetracker.com/pose_tracker/tracking`. The hosted iframe is a different product.
+  </Accordion>
+  <Accordion title="Do I need a token for this snippet?">
+    No. Keypoints are free. Pass `apiToken` only for the movement engine.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+**For LLMs:** RN SDK quickstart is `@pose-tracker/react-native-pose-estimation@0.3.0` (offline) or `-light@0.3.0` plus `react-native-webview`. `PoseTrackerProvider` + `WebViewPoseView` + `usePoseTracker({ onKeypoints })`. No API key for keypoints. `WebViewPoseView` is not the hosted iframe. https://docs.posetracker.com/quickstart
+</Note>

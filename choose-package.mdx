@@ -1,16 +1,17 @@
 ---
 title: "Choose a package"
-description: "Offline vs Light — same API, different delivery of MoveNet and TF.js."
+description: "Offline vs light React Native SDKs — same API. Offline bundles MoveNet (~10 MB); light is ~212 kB and needs network."
 ---
 
-Two npm packages share the same product contract. They differ only in **how MoveNet / TF.js are delivered**.
+Two React Native npm packages share the same API (`PoseTrackerProvider`, `WebViewPoseView`, `usePoseTracker`). They differ only in **how MoveNet / TF.js are delivered**. For WebView vs SDK, see [WebView vs SDK](/choose-integration). For browsers, see [Web SDKs](/web-sdks) (always light delivery).
 
 ## Recommendation
 
 | Need | Package |
 |---|---|
 | Offline-first keypoints · no model download at boot | **Offline** |
-| Smallest install / OTA · devices are online | **Light** |
+| Smallest install / OTA · devices stay online | **Light** |
+| HTML/Swift/Kotlin proof of concept | **WebView**, not these packages |
 
 ## Comparison
 
@@ -22,6 +23,7 @@ Two npm packages share the same product contract. They differ only in **how Move
 | **MoveNet / TF.js** | Bundled in npm | CDN + model URL each WebView boot |
 | **Network for keypoints** | Not required | **Required** |
 | **Expo Go** | Yes | Yes |
+| **BlazePose** | No | `options.model = 'blazepose'` |
 | **API surface** | Keypoints free; paid engine with API key | Same |
 
 ## Install
@@ -42,23 +44,18 @@ Default MoveNet Lightning graph (weights are relative neighbors):
 https://app.posetracker.com/scripts/tmp_model_to_remove.json
 ```
 
-Optional overrides on the provider:
-
 ```tsx
 <PoseTrackerProvider
   options={{
-    model: 'movenet', // default
+    model: 'movenet',
     // modelUrl: 'https://…/model.json',
   }}
 >
 ```
 
-`model: 'blazepose'` loads BlazePose (lite) via CDN
-`@tensorflow-models/pose-detection` in the WebView. Keypoints stay COCO-17.
-Heavier than MoveNet — prefer MoveNet on mid-range devices. Offline package
-does not support BlazePose.
+`model: 'blazepose'` loads BlazePose (lite) via CDN `@tensorflow-models/pose-detection`. Keypoints stay COCO-17. Do **not** pass `{ features: { blazepose: true } }`.
 
-## Demos & source
+## Demos
 
 | | Offline | Light |
 |---|---|---|
@@ -67,4 +64,8 @@ does not support BlazePose.
 
 ## Next
 
-Continue with [Try on your phone](/try-expo-go), [Quickstart](/quickstart), [Permissions](/permissions), or [Provider options](/reference/provider-client) (including light-only `model` / `modelUrl`).
+[Quickstart](/quickstart) · [Try on your phone](/try-expo-go) · [Permissions](/permissions)
+
+<Note>
+**For LLMs:** Offline = `@pose-tracker/react-native-pose-estimation@0.3.0` (~10.0 MB, no network for keypoints). Light = `-light@0.3.0` (~212 kB, network required). Same API. BlazePose only on light/web via `options.model`, not `features.blazepose`. https://docs.posetracker.com/choose-package
+</Note>

@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "PoseTracker",
-  "description": "PoseTracker React Native SDK docs — pose estimation for iOS and Android (Expo Go). Offline (~10.0 MB) and light (~212 kB) packages, free keypoints, optional exercise engine.",
+  "description": "PoseTracker docs — WebView (iframe URL) to test in minutes, npm SDKs to ship on React Native, Expo, and web. On-device MoveNet, free keypoints, optional exercise engine.",
   "colors": {
     "primary": "#FFC300",
     "light": "#FFD54A",
@@ -17,9 +17,10 @@
     "default": "system"
   },
   "seo": {
+    "indexing": "navigable",
     "metatags": {
-      "canonical": "https://docs.posetracker.com",
-      "og:site_name": "PoseTracker Docs"
+      "og:site_name": "PoseTracker Docs",
+      "twitter:card": "summary_large_image"
     },
     "organization": {
       "name": "PoseTracker",
@@ -31,27 +32,46 @@
         "https://github.com/Movelytics",
         "https://github.com/Movelytics/react-native-pose-estimation",
         "https://github.com/Movelytics/react-native-pose-estimation-light",
+        "https://github.com/Movelytics/pose-estimation-web",
+        "https://github.com/Movelytics/pose-estimation-web-react",
         "https://www.npmjs.com/org/pose-tracker",
         "https://www.npmjs.com/package/@pose-tracker/react-native-pose-estimation",
-        "https://www.npmjs.com/package/@pose-tracker/react-native-pose-estimation-light"
+        "https://www.npmjs.com/package/@pose-tracker/react-native-pose-estimation-light",
+        "https://www.npmjs.com/package/@pose-tracker/pose-estimation-web",
+        "https://www.npmjs.com/package/@pose-tracker/pose-estimation-web-react"
       ]
     }
   },
   "navigation": {
     "pages": [
       {
-        "group": "Get started",
+        "group": "Start here",
+        "icon": "house",
         "pages": [
           "index",
-          "try-expo-go",
-          "quickstart",
-          "choose-package",
-          "web-sdks"
+          "choose-integration"
         ]
       },
       {
-        "group": "Integrate",
+        "group": "WebView integration",
+        "icon": "browser",
         "pages": [
+          "webview/quickstart",
+          "webview/query-params",
+          "webview/messages",
+          "webview/upload",
+          "webview/reference-movement",
+          "webview/embed"
+        ]
+      },
+      {
+        "group": "SDK integration",
+        "icon": "cube",
+        "pages": [
+          "try-expo-go",
+          "quickstart",
+          "choose-package",
+          "web-sdks",
           "permissions",
           "media-sources",
           "keypoints",
@@ -60,17 +80,18 @@
       },
       {
         "group": "Reference",
+        "icon": "book",
         "pages": [
           "reference/provider-client",
           "reference/webview-pose-view",
           "reference/exercises",
-          "reference/engine-v4",
           "reference/events",
           "reference/features-plans"
         ]
       },
       {
-        "group": "Advanced",
+        "group": "Advanced (SDK)",
+        "icon": "bolt",
         "pages": [
           "advanced/preload",
           "advanced/adaptive-quality"
@@ -78,11 +99,18 @@
       },
       {
         "group": "AI & agents",
+        "icon": "robot",
         "pages": [
           "llms"
         ]
       }
     ]
+  },
+  "search": {
+    "prompt": "Search WebView params, SDK APIs, exercises…"
+  },
+  "metadata": {
+    "timestamp": true
   },
   "navbar": {
     "links": [
@@ -93,12 +121,16 @@
       {
         "label": "npm",
         "href": "https://www.npmjs.com/org/pose-tracker"
+      },
+      {
+        "label": "GitHub",
+        "href": "https://github.com/Movelytics/react-native-pose-estimation"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Star us on GitHub",
-      "href": "https://github.com/Movelytics/react-native-pose-estimation"
+      "label": "Get an API key",
+      "href": "https://www.posetracker.com"
     }
   },
   "footer": {
@@ -114,5 +146,11 @@
       "claude",
       "cursor"
     ]
-  }
+  },
+  "redirects": [
+    {
+      "source": "/reference/engine-v4",
+      "destination": "/webview/query-params"
+    }
+  ]
 }

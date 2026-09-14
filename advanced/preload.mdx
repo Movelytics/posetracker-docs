@@ -3,7 +3,7 @@ title: "Preload lifecycle"
 description: "When MoveNet loads, cold-start modes, and the lobby warmer pattern."
 ---
 
-Mounting `PoseTrackerProvider` alone does **not** load the model (unless `autoPreload`).
+SDK-only. Mounting `PoseTrackerProvider` alone does **not** load the model (unless `autoPreload`). The hosted WebView has no preload API — the page boots when it loads.
 
 ## What starts what
 

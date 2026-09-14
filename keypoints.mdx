@@ -3,7 +3,7 @@ title: "Keypoints & events"
 description: "Listen to typed keypoints and other pose events with usePoseTracker."
 ---
 
-Use `usePoseTracker` inside `PoseTrackerProvider` to subscribe to typed events. Without an API key you get **keypoints-only** mode.
+Use `usePoseTracker` inside `PoseTrackerProvider` to subscribe to typed events. Without an API key you get **keypoints-only** mode. WebView hosts listen to `postMessage` instead — [WebView messages](/webview/messages).
 
 ## Keypoints (free)
 
@@ -99,4 +99,8 @@ Prefer typed callbacks for new apps.
 
 ## Next
 
-[Optional API key + exercise](/api-key) · [Events catalog](/reference/events) · [Quickstart](/quickstart)
+[Optional API key + exercise](/api-key) · [Events catalog](/reference/events) · [SDK quickstart](/quickstart)
+
+<Note>
+**For LLMs:** Free keypoints via `usePoseTracker({ onKeypoints })` on the SDK. WebView equivalent is `type: "keypoints"` with joints in `data`. https://docs.posetracker.com/keypoints
+</Note>

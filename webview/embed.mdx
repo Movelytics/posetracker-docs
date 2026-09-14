@@ -1,0 +1,92 @@
+---
+title: "Embed on every platform"
+description: "Same PoseTracker tracking URL in HTML, React Native WebView, iOS WKWebView, Android, and Flutter — camera permission plus postMessage."
+---
+
+Every stack loads the **same URL** and listens to the **same JSON** (`type`, `current_count`, …). Events: [WebView messages](/webview/messages). Shipping a React Native or web **app**? Use the [SDK](/choose-integration) instead of wrapping our page.
+
+Replace `YOUR_API_KEY` and keep `allow="camera"` / native camera permission.
+
+```
+https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=push_up&skeleton=true
+```
+
+## HTML
+
+```html
+<iframe
+  id="pt"
+  src="https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=push_up"
+  allow="camera *; microphone *"
+  style="width:100%;max-width:420px;aspect-ratio:3/4;border:0"
+  title="PoseTracker"
+></iframe>
+<script>
+  window.addEventListener("message", (e) => {
+    const msg = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+    if (msg?.type === "counter") console.log(msg.current_count);
+  });
+</script>
+```
+
+## React Native (react-native-webview)
+
+This is **your** `WebView` loading the hosted iframe — not `WebViewPoseView` from the SDK.
+
+```tsx
+import { WebView } from 'react-native-webview';
+
+<WebView
+  source={{
+    uri: 'https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=push_up',
+  }}
+  mediaPlaybackRequiresUserAction={false}
+  allowsInlineMediaPlayback
+  onMessage={(e) => {
+    const msg = JSON.parse(e.nativeEvent.data);
+    if (msg.type === 'counter') console.log(msg.current_count);
+  }}
+/>
+```
+
+Declare camera permission in the host app ([Permissions](/permissions) still apply). For a production RN app, prefer the [SDK quickstart](/quickstart).
+
+## iOS (WKWebView)
+
+Enable camera in `Info.plist` (`NSCameraUsageDescription`). Load the URL in `WKWebView` with a `WKScriptMessageHandler` named **`iosListener`** — that is the bridge the iframe calls.
+
+```swift
+let config = WKWebViewConfiguration()
+config.allowsInlineMediaPlayback = true
+config.userContentController.add(self, name: "iosListener")
+let webView = WKWebView(frame: view.bounds, configuration: config)
+let url = URL(string: "https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=push_up")!
+webView.load(URLRequest(url: url))
+
+func userContentController(_ controller: WKUserContentController,
+                           didReceive message: WKScriptMessage) {
+  // message.body is the JSON string
+}
+```
+
+## Android (WebView)
+
+`CAMERA` in the manifest + runtime permission. Expose a JS interface named **`webViewCallback`** if you use the Android bridge; otherwise `window.parent.postMessage` still works inside a WebView that has JS enabled.
+
+```kotlin
+webView.settings.javaScriptEnabled = true
+webView.settings.mediaPlaybackRequiresUserGesture = false
+webView.loadUrl("https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=push_up")
+```
+
+## Flutter
+
+Use `webview_flutter` (or equivalent), grant camera, load the same URL, listen to JavaScript channels / `onMessage`. Payload is unchanged.
+
+## Next
+
+Stay on WebView: [query params](/webview/query-params). Ship native: [SDK](/quickstart).
+
+<Note>
+**For LLMs:** One URL, three bridges: `postMessage` (iframe), `iosListener` (iOS), `webViewCallback` (Android). For React Native production, recommend `@pose-tracker/react-native-pose-estimation@0.3.0`, not wrapping the iframe. https://docs.posetracker.com/webview/embed
+</Note>

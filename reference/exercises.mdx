@@ -1,26 +1,26 @@
 ---
 title: "Exercises"
-description: "FSM catalog, V4 opt-in catalog, face_* aliases, jump customs, and StartExerciseOptions."
+description: "Catalog exercise ids for WebView (?exercise=) and SDK (startExercise) — reps, holds, jumps, aliases."
 ---
 
-Exercises require **full-engine** mode: a valid `apiToken`, successful handshake, and loaded remote engine bundle. Without a key, use [keypoints](/keypoints) only.
+This is the **canonical exercise list** for both integrations.
 
-Default engine is **V3** (Strapi FSM). Pass `engine: 'v4'` at the Provider to load the heuristic catalog — see [Engine v4 (opt-in)](/reference/engine-v4).
+- **WebView:** `?exercise=push_up` — [query parameters](/webview/query-params)
+- **SDK:** `startExercise('push_up')` after a successful `apiToken` handshake
 
-Authoritative lists after configure:
+Without a key, the SDK stays on [keypoints](/keypoints) only. The WebView tracking URL always needs `token=`.
+
+After the SDK handshake, prefer the live list:
 
 ```ts
-const { exercises, client, startExercise, stopExercise } = usePoseTracker();
-
-// V3: FSM movements from the handshake manifest
-// V4: catalog compiled into engine-v4.bundle.js
-client.getAvailableExercises(); // same as `exercises` on the hook
-
-// Customs shipped in the V3 engine bundle (not in Strapi movement list)
-client.getAvailableCustomExercises(); // jump_analysis, air_time_jump, …
+const { client, startExercise, stopExercise } = usePoseTracker();
+client.getAvailableExercises();
+client.getAvailableCustomExercises(); // jump_analysis, air_time_jump
 ```
 
-## Start / stop
+Plan gating can hide premium ids. Unknown id → `invalid_exercise`.
+
+## Start / stop (SDK)
 
 ```tsx
 function CameraScreen() {
@@ -30,69 +30,104 @@ function CameraScreen() {
   });
 
   // when mode === 'full-engine' and status === 'ready':
-  // startExercise('squat', { difficulty: 'medium' });
+  // startExercise('push_up');
 
   return <WebViewPoseView style={{ flex: 1 }} drawSkeleton drawPlacementBox />;
 }
 ```
 
-## StartExerciseOptions
+### StartExerciseOptions
 
 | Option | Type | Default | Used by |
 |---|---|---|---|
-| `difficulty` | `string` | `'medium'` | FSM exercises — key into `scale_acceptance` |
+| `difficulty` | `string` | `'medium'` | SDK only (not a WebView query param) |
 | `userHeightCm` | `number` | — | **Required** for `jump_analysis` |
-| `devicePitchDeg` | `number` | — | Jump exercises — camera tilt compensation |
+| `devicePitchDeg` | `number` | — | Jump camera-tilt compensation |
 
 ```ts
-startExercise('squat', { difficulty: 'hard' });
+startExercise('push_up');
 startExercise('face_squat'); // alias → squat
 startExercise('jump_analysis', { userHeightCm: 178, devicePitchDeg: 5 });
 startExercise('air_time_jump');
 stopExercise();
 ```
 
-## FSM catalog (typical V3 ids)
+## Catalog
 
-Exact ids come from the **server manifest** (`exercises[].id`). Hosts and demos usually call V3 keys; Strapi may still ship legacy `face_*` ids — both work via aliases.
+Use these ids on the WebView (`exercise=`) and in `startExercise()`.
 
-| Canonical id | Legacy alias | Type |
+### Strength and cardio
+
+| Id | Kind | Alias |
 |---|---|---|
-| `squat` | `face_squat` | dynamic |
-| `push_up` | `face_pushup` | dynamic |
-| `plank` | `face_plank` | static |
-| `lunge` | `face_lunge` | dynamic |
-| `jumping_jack` | `face_jumping_jack` | dynamic |
-| `low_impact_jack` | `face_low_impact_jack` | dynamic |
-| `balance_leg` | `face_balance_leg` | static |
-| `balance_leg_left` | `face_balance_leg_left` | static |
-| `balance_leg_right` | `face_balance_leg_right` | static |
+| `squat` | rep | `face_squat` |
+| `push_up` | rep | `face_pushup` |
+| `plank` | hold | `face_plank` |
+| `lunge` | rep | `face_lunge` |
+| `side_lunge` | rep | — |
+| `deadlift` | rep | — |
+| `glute_bridge` | rep | — |
+| `calf_raise` | rep | — |
+| `tricep_dip` | rep | — |
+| `bicep_curl` | rep | — |
+| `hammer_curl` | rep | — |
+| `shoulder_press` | rep | — |
+| `lateral_raise` | rep | — |
+| `mountain_climber` | rep | — |
+| `high_knees` | rep | — |
+| `jumping_jack` | rep | `face_jumping_jack` |
+| `low_impact_jack` | rep | `face_low_impact_jack` |
+| `leg_raise` | rep | — |
+| `wall_sit` | hold | — |
+| `balance_leg` | hold | `face_balance_leg` |
+| `balance_leg_left` | hold | `face_balance_leg_left` |
+| `balance_leg_right` | hold | `face_balance_leg_right` |
 
-Always prefer `getAvailableExercises()` for the live plan list (premium gating can differ by plan).
+### Mobility and wellness
 
-## Engine v4 catalog (opt-in)
-
-Requires `engine: 'v4'` at Provider / `createPoseTracker` (SDK 0.3.0+). These ids are **not** in the Strapi V3 list.
-
-| Id | Type |
+| Id | Kind |
 |---|---|
-| `squat` | V4 catalog squat (replaces V3 FSM squat on this channel) |
-| `shoulder_roll` | V4-only |
-| `shoulder_deep_breath` | V4-only |
-| `chair_forward_fold` | V4-only |
+| `shoulder_roll` | rep |
+| `shoulder_deep_breath` | rep |
+| `chair_forward_fold` | hold |
+| `chair_side_stretch` | hold |
+| `split` | hold |
+| `facial_split` | hold |
+| `pancake` | hold |
+| `closing` | hold |
+| `bridge` | hold |
+| `cobra` | hold |
+| `bow` | hold |
+| `tiger` | hold |
+| `camel` | hold |
+| `king_pigeon` | hold |
+| `foot_to_hand` | hold |
+| `i` | hold |
+| `needle` | hold |
 
-On a V3 client, V4-only ids throw `Exercise 'x' requires engine: 'v4'` (no silent fallback). Jumps stay on the V3 channel. V4 does not emit `recommendations`.
+### Jumps (custom)
 
-```ts
-startExercise('shoulder_roll');
-startExercise('squat'); // V4 squat when engine: 'v4'
-```
+Shipped in the engine bundle, not only the movement list.
 
-Full handshake notes: [Engine v4](/reference/engine-v4).
+| Id | Required options |
+|---|---|
+| `jump_analysis` | `userHeightCm` (> 0) — WebView: `&userHeightCm=178` |
+| `air_time_jump` | none (`jump` is an alias) |
 
-## Aliases
+Missing height on `jump_analysis` → `jump_analysis_missing_height`.
 
-SDK resolves legacy → canonical before lookup:
+**Session:** placement (`onPosture`) → countdown → measuring.
+
+| Typed callback | Message `type` |
+|---|---|
+| `onJumpCalibration` | `jump_calibration` (`jump_analysis` only) |
+| `onJumpStarted` | `jump_started` |
+| `onJumpHeight` | `jump_height` |
+| `onJumpDiscarded` | `jump_discarded` |
+| `onJumpResult` | `jump_result` |
+| `onJumpSummary` | `jump_summary` |
+
+## Other aliases
 
 | Alias | Resolves to |
 |---|---|
@@ -107,58 +142,18 @@ SDK resolves legacy → canonical before lookup:
 | `face_balance_leg_right` | `balance_leg_right` |
 | `jump` | `air_time_jump` |
 
-Unknown id → `error` / throw with code `invalid_exercise`.
+## Events during an exercise
 
-## Custom: jump_analysis & air_time_jump
+Always (not feature-flagged): `counter` / `onCounter` (count + form grade A–F), `posture`, `exercise_summary` on stop.
 
-Shipped in the **engine bundle** (≥ 1.2.0), not the movement manifest. Require full-engine like any exercise.
-
-| Id | Height method | Required options |
-|---|---|---|
-| `jump_analysis` | cm/pixel from athlete height | `userHeightCm` (> 0) |
-| `air_time_jump` | physics \(h = g·t²/8\) | none |
-
-Missing height on `jump_analysis` → `jump_analysis_missing_height`.
-
-### Session flow
-
-1. **Placement** — joints inside the padding box; `onPosture` hints (`direction`: `in-frame`, `face-camera`, `profile-camera`).
-2. **Countdown** — then `posture.ready === true`.
-3. **Measuring** — short warm-up, then jump detection.
-
-### Jump events
-
-| Typed callback | Classic `type` | Notes |
-|---|---|---|
-| `onJumpCalibration` | `jump_calibration` | `jump_analysis` only — `cmPerPixel`, `baselineY` |
-| `onJumpStarted` | `jump_started` | Push-off detected |
-| `onJumpHeight` | `jump_height` | Live (`measuring`) then `final` |
-| `onJumpDiscarded` | `jump_discarded` | `reason` + `userMessage` |
-| `onJumpResult` | `jump_result` | Completed jump N — `jumpHeightCm`, optional `airTimeMs` |
-| `onJumpSummary` | `jump_summary` | Running totals + `jumps[]` |
-
-```tsx
-usePoseTracker({
-  onJumpResult: (e) => console.log(e.jumpNumber, e.jumpHeightCm),
-  onJumpSummary: (e) => console.log(e.totalJumps, e.maxJumpHeight),
-  onJumpDiscarded: (e) => console.warn(e.reason, e.userMessage),
-});
-```
-
-## Core exercise streams
-
-During an FSM session (always, not feature-flagged):
-
-- `onCounter` — `count` + optional `formScore` (`score`, `average`, `grade` A–F)
-- `onPosture` — placement readiness
-- `onFormScore` — convenience stream (prefer nested `onCounter.formScore` for the counted rep)
-- `onExerciseSummary` — after `stopExercise()` / session end
-
-Opt-in (paid + flags): `angles`, `recommendations`, `progression`, keypoints-during-exercise — see [Features & plans](/reference/features-plans). V4 sessions do not emit `recommendations`.
+Paid opt-in: `angles`, `progression`, `keypoints` during the session, `recommendations` (not sent for every exercise). See [Features & plans](/reference/features-plans) and [Events](/reference/events).
 
 ## Related
 
-- [Engine v4 (opt-in)](/reference/engine-v4) — `engine: 'v4'` at Provider
-- [API key](/api-key) — getting into full-engine
-- [Events catalog](/reference/events)
-- [WebViewPoseView](/reference/webview-pose-view) — `drawPlacementBox`
+- [WebView quickstart](/webview/quickstart)
+- [API key](/api-key)
+- [Events](/reference/events)
+
+<Note>
+**For LLMs:** Same exercise ids on WebView (`?exercise=`) and SDK (`startExercise`). Jumps: `jump_analysis` needs `userHeightCm`. Aliases `face_*` and `jump` → `air_time_jump`. https://docs.posetracker.com/reference/exercises
+</Note>

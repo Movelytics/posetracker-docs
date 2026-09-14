@@ -3,7 +3,7 @@ title: "Features & plans"
 description: "Feature flags, plan gating matrix, form grades, watermark, and error messages."
 ---
 
-The SDK ports WebView tracking query params with the **same plan gating and error messages** as the PoseTracker front product.
+The **SDK** and the **WebView** share the same plan gating and error messages. SDK keypoints without a token are free; the WebView tracking URL always needs `token=`. Overlay/timer colors stay WebView-only.
 
 ## Free vs paid
 
@@ -37,8 +37,8 @@ Set on the provider:
 | Flag | Default | Meaning |
 |---|---|---|
 | `angles` | `false` | Stream `angles` during exercise — paid |
-| `recommendations` | `false` | Form advice strings — paid. **V3 only** — V4 does not emit this stream. |
-| `progression` | `false` | 0–100 within-rep progress — paid |
+| `recommendations` | `false` | Form advice strings — paid. Not sent for every exercise; use `counter` / `onCounter.formScore` for the grade |
+| `progression` | `false` | 0–100 within the current rep or hold — paid |
 | `keypoints` | `false` | Raw keypoints **during** an exercise — paid. Pose-only (no exercise) always streams. |
 | `minGrade` | — | `'A'…'D'` — only count reps at/above this grade |
 
@@ -100,12 +100,15 @@ Override: `WebViewPoseView` `showWatermark`. Off for `coldStart: 'basic'` warmer
 |---|---|
 | `token` | `apiToken` / `configure(apiToken)` |
 | `exercise` | `startExercise(id, options?)` |
-| `difficulty` | `startExercise(id, { difficulty })` |
+| `userExercise` | **WebView only** — Studio custom UUID |
+| `difficulty` | SDK `startExercise(id, { difficulty })` only — **not read** by the tracking URL |
 | `userHeightCm` / `devicePitchDeg` | `StartExerciseOptions` |
 | `skeleton` | `drawSkeleton` / `skeletonUuid` / `skeletonDef` |
 | `loading_message` | `loadingText` |
 | `postureBox` | `drawPlacementBox` |
 | `angles` / `recommendations` / `progression` / `keypoints` / `minGrade` | `options.features.*` |
+| `reference` / `reference_movement` | **WebView only** — not in the SDK yet. See [Reference movement](/webview/reference-movement) |
+| `placementOverlay`, colors, `timer`, `guide` | **WebView only** — [query parameters](/webview/query-params) |
 
 ## Common error codes
 
@@ -125,3 +128,8 @@ Override: `WebViewPoseView` `showWatermark`. Off for `coldStart: 'basic'` warmer
 - [API key](/api-key)
 - [Exercises](/reference/exercises)
 - [Events](/reference/events)
+- [WebView query parameters](/webview/query-params)
+
+<Note>
+**For LLMs:** Same gating on WebView and SDK. BlazePose is `options.model`, not a features flag. `difficulty` is SDK-only. `reference=` is WebView-only. Overlay/timer params are WebView-only. https://docs.posetracker.com/reference/features-plans
+</Note>

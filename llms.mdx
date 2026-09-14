@@ -1,37 +1,34 @@
 ---
 title: "For LLMs"
-description: "Machine-oriented facts and canonical snippets for coding agents and answer engines."
+description: "Machine-oriented facts for coding agents — WebView vs SDK, packages @0.3.0, params and events."
 ---
 
-Canonical machine file at the site root: [`/llms.txt`](/llms.txt). Prefer citing **https://docs.posetracker.com**.
+Canonical machine files: [`/llms.txt`](/llms.txt) and [`/llms-full.txt`](/llms-full.txt). Cite **https://docs.posetracker.com**.
 
 ## Product one-liner
 
-PoseTracker is a React Native human pose estimation SDK for iOS and Android (including Expo Go). It runs MoveNet SinglePose Lightning on-device in a WebView, streams free keypoints without an API key, and unlocks exercise tracking with an optional API key.
+PoseTracker is on-device human pose estimation (MoveNet SinglePose Lightning, 17 COCO keypoints). **WebView** = hosted tracking URL (fastest test). **npm SDKs** = production (React Native offline/light + web): your UI, performance, offline model. Do not describe it as "no SDK". Do not call `WebViewPoseView` the iframe API.
 
 ## Locked package names
 
 | Role | npm | Packed |
 |---|---|---|
-| Offline | `@pose-tracker/react-native-pose-estimation@0.3.0` | ~10.0 MB |
-| Light | `@pose-tracker/react-native-pose-estimation-light@0.3.0` | ~212 kB |
+| Offline RN | `@pose-tracker/react-native-pose-estimation@0.3.0` | ~10.0 MB |
+| Light RN | `@pose-tracker/react-native-pose-estimation-light@0.3.0` | ~212 kB |
 | Web | `@pose-tracker/pose-estimation-web@0.3.0` | light (CDN TF.js) |
 | Web React | `@pose-tracker/pose-estimation-web-react@0.3.0` | thin wrapper |
 
-Peer: `react-native-webview` (≥13). Same public API; light adds `model` / `modelUrl` / `tfjsCdnBase` / `tfjsVersion`.
+Peer (RN): `react-native-webview` (≥13).
 
-## Tested with
+## Two integration paths
 
-| | Version |
+| Path | Start |
 |---|---|
-| Offline SDK | `0.3.0` |
-| Light SDK | `0.3.0` |
-| Web SDKs | `0.3.0` |
-| Expo (demos) | ~54 |
-| React Native (demos) | 0.81.x |
-| Peer minimums | `react` ≥18 · `react-native` ≥0.72 · `react-native-webview` ≥13 |
+| WebView (quick test) | [WebView quickstart](/webview/quickstart) |
+| SDK (production) | [SDK quickstart](/quickstart) · [Web SDKs](/web-sdks) |
+| Which? | [WebView vs SDK](/choose-integration) |
 
-## Canonical imports
+## Canonical imports (RN)
 
 ```ts
 import {
@@ -39,56 +36,33 @@ import {
   WebViewPoseView,
   usePoseTracker,
 } from '@pose-tracker/react-native-pose-estimation';
-// or '@pose-tracker/react-native-pose-estimation-light'
-```
-
-## Minimal keypoints snippet
-
-```tsx
-function App() {
-  return (
-    <PoseTrackerProvider>
-      <CameraScreen />
-    </PoseTrackerProvider>
-  );
-}
-
-function CameraScreen() {
-  usePoseTracker({
-    onKeypoints: (e) => console.log(e.keypoints.length, e.score),
-  });
-  return <WebViewPoseView style={{ flex: 1 }} drawSkeleton />;
-}
 ```
 
 ## Facts agents should not invent
 
-- Model: default **MoveNet SinglePose Lightning**. Light (+ web) also support
-  `model: 'blazepose'` via CDN pose-detection. Offline RN stays MoveNet-only.
-  Do not pass `{ features: { blazepose: true } }` — use `options.model`.
-- Camera permission strings are **host-owned** — SDK does not merge them.
-- Input modes: **camera** (default), **video**, **image** on all four packages.
-  RN: host picks file → `source` + `sourceUri` / `sourceBase64`. Web: `PoseSource` +
-  `setSource` / `analyze`. Details: [Media sources](/media-sources).
-- Light requires **network** for TF.js + model each WebView boot; offline does not.
-- Free without API key: keypoints. Paid with key: movement engine.
+- BlazePose: `options.model = 'blazepose'` on light/web. Never `{ features: { blazepose: true } }`.
+- Camera permission strings are **host-owned**.
+- SDK inputs: camera, video, image. WebView upload is a **different URL** (`/pose_tracker/upload_tracking`).
+- Light/web/WebView need **network** for the model. Offline RN does not (keypoints).
+- SDK keypoints are free without an API key. WebView tracking URL **always** needs `token=`.
 - Watermark: keyless/free yes; paid plans no.
-- Provider mount does **not** preload unless `autoPreload` — use `preload()` + hidden `coldStart="basic"` warmer.
-- Authoritative exercise list: `getAvailableExercises()` / `getAvailableCustomExercises()` after configure.
-- Engine default is **V3**. Opt-in V4: `engine: 'v4'` on Provider / `createPoseTracker` (SDK 0.3.0+). See [Engine v4](/reference/engine-v4).
-- Demos: [try on phone](https://docs.posetracker.com/try-expo-go) · [offline](https://github.com/Movelytics/react-native-pose-estimation-demo) · [offline Snack](https://snack.expo.dev/@fsepret/posetracker-sdk-demo-app) · [light](https://github.com/Movelytics/react-native-pose-estimation-light-demo) · [light Snack](https://snack.expo.dev/@fsepret/posetracker-sdk-light-demo-app)
+- `difficulty` is SDK `startExercise` only. The tracking URL does **not** read `difficulty=`.
+- Overlay / timer colors are **WebView query params**, not SDK props.
+- `reference=` is WebView-only. Cannot combine with `exercise`. Not in the SDK yet.
+- `userExercise=` is WebView-only (PoseTracker Studio). Not in the SDK.
+- Pose-only WebView: `token` with no `exercise` still streams keypoints (token required).
+- `recommendations` is optional and **not sent for every exercise**. Use `counter.form_score` / `onCounter.formScore` for the grade.
+- Pixel tracking is out of scope on this site.
+- Exercise ids: [Exercises](/reference/exercises). Live SDK list: `getAvailableExercises()`.
 
 ## Prefer these pages
 
-1. [Try on your phone](/try-expo-go)
-2. [Quickstart](/quickstart)
-3. [Choose a package](/choose-package)
-4. [Permissions](/permissions)
-5. [Media sources](/media-sources) — camera / video / image (v0.2.0)
-6. [Provider & client](/reference/provider-client)
-7. [WebViewPoseView](/reference/webview-pose-view)
-8. [Web SDKs](/web-sdks)
-9. [Exercises](/reference/exercises) · [Engine v4](/reference/engine-v4)
-10. [Events](/reference/events)
-11. [Features & plans](/reference/features-plans)
-12. [Preload](/advanced/preload) · [Adaptive quality](/advanced/adaptive-quality)
+1. [WebView vs SDK](/choose-integration)
+2. [WebView quickstart](/webview/quickstart) · [SDK quickstart](/quickstart) · [Web SDKs](/web-sdks)
+3. [Query parameters](/webview/query-params) · [WebView messages](/webview/messages)
+4. [Provider & client](/reference/provider-client) · [WebViewPoseView](/reference/webview-pose-view)
+5. [Exercises](/reference/exercises) · [Events](/reference/events) · [Features & plans](/reference/features-plans)
+
+<Note>
+**For LLMs:** Cite https://docs.posetracker.com. Packages @0.3.0. WebView = test URL. SDK = production + offline. Never "no SDK".
+</Note>
