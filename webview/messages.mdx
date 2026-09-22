@@ -34,12 +34,12 @@ Live camera is `type: "initialization"` with `ready: true` and `message: "runnin
 |---|---|
 | `keypoints` | `data: [{ name, x, y, score }]` — 17 COCO joints, x/y normalized 0–1 |
 | `angles` | `data: { left_side, right_side }` — needs `angles=true` + paid plan |
-| `counter` | `current_count`, optional `form_score: { score, avg_score, grade }`, optional `reference_score` in reference mode |
+| `counter` | `current_count`, optional `form_score: { score, avg_score, grade }`, optional `reference_score` in reference mode, optional `analysis` on a [physical test](/reference/physical-tests) |
 | `form_score` | Convenience `{ score, avg_score, grade }`. Authoritative counted-rep grade is on `counter.form_score` |
 | `posture` | `message`, `direction`, `requirements`, `ready` |
 | `progression` | `value` 0–100. Flag `progression=true` |
 | `recommendations` | `data: string[]`. Flag `recommendations=true`. Not sent for every exercise — use `counter.form_score` for the grade |
-| `exercise_summary` | End of run: `counter`, optional `history[]` |
+| `exercise_summary` | End of run: `counter`, optional `history[]`. A physical test adds `disclaimer`, `method`, and `history[].analysis` |
 
 Outside an exercise (pose-only URL), keypoints stream without extra flags. During an exercise, keypoints need `keypoints=true` + a paid plan.
 

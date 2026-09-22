@@ -105,6 +105,14 @@ Use these ids on the WebView (`exercise=`) and in `startExercise()`.
 | `i` | hold |
 | `needle` | hold |
 
+### Physical tests
+
+These ids count like any other exercise, and each counted rep also includes an `analysis` object. Field list and the first test: [Physical tests](/reference/physical-tests).
+
+| Id | Kind | Setup |
+|---|---|---|
+| `back_flexibility_test` | rep | Side view. Stand, fold, stand. Not a tape measure. |
+
 ### Jumps (custom)
 
 Shipped in the engine bundle, not only the movement list.
@@ -144,7 +152,7 @@ Missing height on `jump_analysis` → `jump_analysis_missing_height`.
 
 ## Events during an exercise
 
-Always (not feature-flagged): `counter` / `onCounter` (count + form grade A–F), `posture`, `exercise_summary` on stop.
+Always (not feature-flagged): `counter` / `onCounter` (count + form grade A–F), `posture`, `exercise_summary` on stop. Physical tests also set `analysis` on that counter — [Physical tests](/reference/physical-tests).
 
 Paid opt-in: `angles`, `progression`, `keypoints` during the session, `recommendations` (not sent for every exercise). See [Features & plans](/reference/features-plans) and [Events](/reference/events).
 
@@ -155,5 +163,5 @@ Paid opt-in: `angles`, `progression`, `keypoints` during the session, `recommend
 - [Events](/reference/events)
 
 <Note>
-**For LLMs:** Same exercise ids on WebView (`?exercise=`) and SDK (`startExercise`). Jumps: `jump_analysis` needs `userHeightCm`. Aliases `face_*` and `jump` → `air_time_jump`. https://docs.posetracker.com/reference/exercises
+**For LLMs:** Same exercise ids on WebView (`?exercise=`) and SDK (`startExercise`). Jumps: `jump_analysis` needs `userHeightCm`. Aliases `face_*` and `jump` → `air_time_jump`. Physical tests (`back_flexibility_test`) add `analysis` on the counter. https://docs.posetracker.com/reference/exercises
 </Note>

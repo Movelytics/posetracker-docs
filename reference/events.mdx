@@ -36,13 +36,13 @@ Business events need [full-engine](/api-key) + [feature flags](/reference/featur
 
 | Typed | Classic `type` | Key fields |
 |---|---|---|
-| `onCounter` | `counter` | `count`, `formScore?: { score, average, grade }` — **authoritative** grade for the counted rep. Classic: `current_count`, `form_score: { score, avg_score, grade }` |
+| `onCounter` | `counter` | `count`, `formScore?: { score, average, grade }` — **authoritative** grade for the counted rep. Classic: `current_count`, `form_score: { score, avg_score, grade }`. Physical tests also set `analysis` — [Physical tests](/reference/physical-tests) |
 | `onAngles` | `angles` | `angles: [{ id, side, degrees, score }]` — flag `features.angles` |
 | `onPosture` | `posture` | `ready`, `hint`, `direction?`, `missingKeypoints` |
 | `onProgression` | `progression` | `value` 0–100 — flag `features.progression` |
 | `onRecommendations` | `recommendations` | `recommendations: string[]` — flag `features.recommendations`. Not sent for every exercise; use `onCounter.formScore` for the counted-rep grade |
 | `onFormScore` | `form_score` | Convenience; prefer `onCounter.formScore` |
-| `onExerciseSummary` | `exercise_summary` | `exercise`, `counter`, `averageFormScore`, `grade`, `history[]` |
+| `onExerciseSummary` | `exercise_summary` | `exercise`, `counter`, `averageFormScore`, `grade`, `history[]`. A physical test also sets `disclaimer`, `method`, and `history[].analysis` |
 | Jump family | `jump_*` | See [Exercises](/reference/exercises) |
 
 Outside an exercise session, pose-only `keypoints` always stream (free). During an exercise, keypoints need `features.keypoints` + a paid plan.
@@ -78,9 +78,10 @@ Camera boot sequence (classic messages): `accessing webcam` → `loading pose mo
 | B | ≥ 80 |
 | C | ≥ 70 |
 | D | ≥ 60 |
-| F | &lt; 60 |
+| E | ≥ 40 |
+| F | &lt; 40 |
 
-`minGrade` (A–D): reps below the bar are **not counted** (no `counter` / `form_score`, excluded from summary).
+`minGrade` (A–D): reps below the bar are **not counted** (no `counter` / `form_score`, excluded from summary). Physical-test peaks live on `analysis`, not in this table.
 
 ### QualityChangedEvent
 
@@ -121,5 +122,5 @@ The in-page yellow debug HUD is **not** your app’s event stream. Drive UI from
 - [Adaptive quality](/advanced/adaptive-quality)
 
 <Note>
-**For LLMs:** SDK typed callbacks use `count` / `formScore`. WebView classic JSON uses `current_count` / `form_score`. Grades A≥90 B≥80 C≥70 D≥60 F&lt;60. https://docs.posetracker.com/reference/events
+**For LLMs:** SDK typed callbacks use `count` / `formScore`. WebView classic JSON uses `current_count` / `form_score`. Grades A≥90 B≥80 C≥70 D≥60 E≥40 F&lt;40. Physical tests also set `analysis`. https://docs.posetracker.com/reference/events
 </Note>

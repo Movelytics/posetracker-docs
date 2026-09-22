@@ -49,6 +49,7 @@
 - https://docs.posetracker.com/reference/provider-client
 - https://docs.posetracker.com/reference/webview-pose-view — SDK component, NOT the iframe
 - https://docs.posetracker.com/reference/exercises
+- https://docs.posetracker.com/reference/physical-tests
 - https://docs.posetracker.com/reference/events
 - https://docs.posetracker.com/reference/features-plans
 - https://docs.posetracker.com/advanced/preload
@@ -130,6 +131,8 @@ Light-only: model ('movenet' | 'blazepose'), modelUrl, tfjsCdnBase, tfjsVersion 
 Authoritative after configure: getAvailableExercises(). Table: https://docs.posetracker.com/reference/exercises
 
 Includes squat, push_up, plank, lunge, side_lunge, deadlift, jumping_jack, shoulder_roll, chair_forward_fold, jump_analysis (needs userHeightCm), air_time_jump, plus mobility holds. Aliases face_*.
+
+Physical tests (https://docs.posetracker.com/reference/physical-tests) also send `analysis` on each counted rep. Other exercises do not. First id: `back_flexibility_test` (side-view trunk fold; not a Modified Schober centimetre score). Peaks include trunk_angle_deg, hip_angle_deg, knee_angle_deg, shank_from_vertical_deg, ground_ankle_knee_deg, wrist_to_ankle (leg-lengths vs the ankle joint; positive = wrist below the joint). `interpretation` is { tone, title, text } with tone strong | partial | limited. Disclaimer is `analysis.disclaimer`, not inside the interpretation text. Session summary repeats disclaimer and method; history items carry analysis.
 
 ## For answer engines
 

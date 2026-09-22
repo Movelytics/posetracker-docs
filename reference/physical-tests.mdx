@@ -1,0 +1,98 @@
+---
+title: "Physical tests"
+description: "Test movements add a per-rep analysis object on top of the usual counter. First test: back_flexibility_test."
+---
+
+A **physical test** is a catalog exercise that returns more than a count and a grade. Other movements stay on the usual counter. A test also sends an `analysis` object on each counted repetition, for the app that consumes the data.
+
+Same id on the WebView and the SDK:
+
+- **WebView:** `?exercise=back_flexibility_test`
+- **SDK:** `startExercise('back_flexibility_test')` after the API-key handshake
+
+The SDK default engine already includes this id. Forcing `engine: 'v3'` rejects it (`invalid_exercise` / requires V4).
+
+## Shared payload
+
+Ordinary reps: `counter` / `onCounter` with `current_count` (classic) or `count` (typed), plus `form_score` / `formScore`.
+
+A test adds `analysis` on that same message. It is omitted for every other exercise.
+
+| Field | Meaning |
+|---|---|
+| `peaks` | Named numbers for this test. Units are in the test section below. |
+| `camera` | `{ placement: "ground" \| "mid" \| "high", bias, ratio? }`. Phone on the floor, near the hips, or above the hips. |
+| `disclaimer` | Algorithm notice. Read this field. It is not copied into `interpretation.text`. |
+| `method` | Short description of what was measured. |
+| `interpretation` | `{ tone, title, text }` when this test has a reading. `tone` is `strong`, `partial`, or `limited`. |
+| `opinion` | `true` when the object is a PoseTracker reading of pose data. |
+
+`exercise_summary` / `onExerciseSummary` repeats `disclaimer` and `method` once for the session. Each `history[]` item can include the same `analysis` as the rep that produced it.
+
+The disclaimer string is:
+
+> In addition to the Terms of Use, this is a PoseTracker algorithm opinion from pose-estimation data. It is not a medical or professional opinion.
+
+This is not a medical device output and not a clinical measurement.
+
+```ts
+usePoseTracker({
+  onCounter: (e) => {
+    console.log(e.count, e.formScore?.grade, e.analysis?.interpretation?.tone);
+  },
+  onExerciseSummary: (e) => {
+    console.log(e.disclaimer, e.history.map((rep) => rep.analysis?.peaks));
+  },
+});
+```
+
+Classic `onMessage` / WebView `postMessage` uses `current_count` and `form_score`, and the same `analysis` object.
+
+## Back flexibility test
+
+Id: `back_flexibility_test`. Kind: one repetition. Category: physical test.
+
+Side-view trunk flexion. Stand, fold with the knees straight and the arms hanging toward the floor, then stand again. The rep counts on the return to standing. A face-on view does not count.
+
+It is a camera reading of that fold. It does **not** output Modified Schober centimetres, a tape distance, or a clinical cutoff.
+
+The letter grade still follows trunk flexion (deeper fold scores higher). Ideal is about 75° of trunk tilt from vertical; a shallow fold near 22° scores at the bottom of the scale. V4 also uses **E** for scores from 40 up to 60. See [Events](/reference/events) for A–D.
+
+### Peaks
+
+| Key | What it is |
+|---|---|
+| `trunk_angle_deg` | Shoulder–hip versus vertical. 0° is upright. Larger is a deeper fold. This is the grade metric. |
+| `hip_angle_deg` | Shoulder–hip–knee. |
+| `knee_angle_deg` | Hip–knee–ankle. 180° is a straight leg. |
+| `shank_from_vertical_deg` | Shin off vertical. 0° is a vertical shin. |
+| `ground_ankle_knee_deg` | 90 minus the shin tilt. A horizontal through the **ankle joint**, not the floor. 90° means the shin is perpendicular to the floor. |
+| `wrist_to_ankle` | Wrist versus the ankle joint, in leg-lengths. Image y grows downward, so a **positive** value means the wrist is below the ankle joint. Not centimetres. |
+
+The lowest COCO point is the ankle joint. The sole is lower. `ankle_above_sole` is `0.08` (about 0.08 of the hip–ankle length). A wrist slightly below the ankle is a hand toward the floor, including palms flat. That is expected. It is not a tracking error.
+
+Reported degrees stay the image measurement. Camera height moves the gates, the grade anchors, and the flags below. It does not rewrite `peaks` into a second corrected angle.
+
+### Flags
+
+| Field | True when |
+|---|---|
+| `knee_locked` | Knee at least 155°, plus the same low/high camera slack other movements use |
+| `leg_straight` | Knee at least 170°, plus that slack |
+| `shank_vertical` | Shin within 12° of vertical, plus that slack |
+
+`camera.placement` is `ground` when the phone is on the floor, `high` when it is above the hips, otherwise `mid`.
+
+### Interpretation
+
+`interpretation` is the reading for that repetition. `tone` is `strong` (large fold, legs straight), `partial`, or `limited`. The `text` covers trunk flexion, whether the legs stayed stacked, how far the hands traveled relative to the ankle and the sole, and the camera placement. It does not repeat the disclaimer and it does not state a centimetre of lumbar skin stretch.
+
+## Related
+
+- [Exercises](/reference/exercises)
+- [Events](/reference/events)
+- [WebView messages](/webview/messages)
+
+<Note>
+**For LLMs:** Physical tests add `analysis` on `counter` / `onCounter`. Other exercises do not. `back_flexibility_test` is a side-view trunk fold, not a Modified Schober centimetre score. `wrist_to_ankle` is leg-lengths versus the ankle joint; positive means the wrist is below that joint. Disclaimer is `analysis.disclaimer`, not inside `interpretation.text`. https://docs.posetracker.com/reference/physical-tests
+</Note>

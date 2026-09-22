@@ -85,6 +85,7 @@
           "reference/provider-client",
           "reference/webview-pose-view",
           "reference/exercises",
+          "reference/physical-tests",
           "reference/events",
           "reference/features-plans"
         ]
