@@ -56,13 +56,15 @@ Side-view trunk flexion. Stand, fold with the knees straight and the arms hangin
 
 It is a camera reading of that fold. It does **not** output Modified Schober centimetres, a tape distance, or a clinical cutoff.
 
-The letter grade still follows trunk flexion (deeper fold scores higher). Ideal is about 75° of trunk tilt from vertical; a shallow fold near 22° scores at the bottom of the scale. V4 also uses **E** for scores from 40 up to 60. See [Events](/reference/events) for A–D.
+The letter grade is how close that repetition’s best pose got to the optimal end pose: hands at the sole (`wrist_to_ankle` about 0.10), trunk near horizontal (about 85° from vertical), knees straight, shin stacked. Reach carries most of the score. A shorter reach, a softer knee, or a shin that leaves vertical lowers the letter. V4 also uses **E** for scores from 40 up to 60. See [Events](/reference/events) for A–D.
+
+During the fold the engine also emits `reading`: `reach` is the current frame, `reach_max` is the best of this repetition, and `score` / `grade` follow that best pose as it improves. The counted `counter` uses the same score.
 
 ### Peaks
 
 | Key | What it is |
 |---|---|
-| `trunk_angle_deg` | Shoulder–hip versus vertical. 0° is upright. Larger is a deeper fold. This is the grade metric. |
+| `trunk_angle_deg` | Shoulder–hip versus vertical. 0° is upright. Larger is a deeper fold. About 85° is the trunk part of the optimal end pose. |
 | `hip_angle_deg` | Shoulder–hip–knee. |
 | `knee_angle_deg` | Hip–knee–ankle. 180° is a straight leg. |
 | `shank_from_vertical_deg` | Shin off vertical. 0° is a vertical shin. |
@@ -94,5 +96,5 @@ Reported degrees stay the image measurement. Camera height moves the gates, the 
 - [WebView messages](/webview/messages)
 
 <Note>
-**For LLMs:** Physical tests add `analysis` on `counter` / `onCounter`. Other exercises do not. `back_flexibility_test` is a side-view trunk fold, not a Modified Schober centimetre score. `wrist_to_ankle` is leg-lengths versus the ankle joint; positive means the wrist is below that joint. Disclaimer is `analysis.disclaimer`, not inside `interpretation.text`. https://docs.posetracker.com/reference/physical-tests
+**For LLMs:** Physical tests add `analysis` on `counter` / `onCounter`. Other exercises do not. `back_flexibility_test` is a side-view trunk fold, not a Modified Schober centimetre score. `wrist_to_ankle` is leg-lengths versus the ankle joint; positive means the wrist is below that joint. The grade compares the best pose with hands at the sole, trunk near 85°, and straight legs. Live `reading` carries `reach`, `reach_max`, `score`, `grade`. Disclaimer is `analysis.disclaimer`, not inside `interpretation.text`. https://docs.posetracker.com/reference/physical-tests
 </Note>
