@@ -1,0 +1,121 @@
+---
+title: "MCP connector"
+description: "Connect Claude, Cursor or any MCP client to your PoseTracker account. The agent lists exercises, writes the integration and reads your API key after you click Allow."
+keywords:
+  - MCP
+  - Claude
+  - Cursor
+  - OAuth
+  - PoseTracker connector
+---
+
+The PoseTracker MCP connector lets a coding agent act as **your PoseTracker account**. You sign in once and click **Allow**. After that, the agent uses the same catalog, assistant, credits and limits as the [PoseTracker app](https://app.posetracker.com).
+
+It does not replace the [WebView](/webview/quickstart) or the [SDK](/quickstart). It writes that integration for you.
+
+## Connector URL
+
+```text
+https://mcp.posetracker.com/api/mcp
+```
+
+Remote MCP over Streamable HTTP. OAuth 2.1 with PKCE and dynamic client registration. You do not paste an API key into the agent: the client discovers the OAuth server from this URL.
+
+<Note>
+Opening that URL in a browser returns `{"error":"unauthorized"}`. That response is the OAuth challenge, not a missing permission. Leave the Strapi route closed to the public. The discovery address `https://mcp.posetracker.com/.well-known/oauth-protected-resource/api/mcp` is in the `WWW-Authenticate` header. Paste only `https://mcp.posetracker.com/api/mcp` into Claude or Cursor.
+</Note>
+
+## Add it to your agent
+
+<Tabs>
+  <Tab title="Claude">
+    **Settings → Connectors → Add custom connector**. Paste the connector URL, then **Connect**.
+  </Tab>
+  <Tab title="Claude Code">
+    ```bash
+    claude mcp add --transport http posetracker https://mcp.posetracker.com/api/mcp
+    ```
+    Then run `/mcp` in Claude Code and choose **Authenticate**.
+  </Tab>
+  <Tab title="Cursor">
+    In `~/.cursor/mcp.json` (or `.cursor/mcp.json` in the project):
+
+    ```json
+    {
+      "mcpServers": {
+        "posetracker": {
+          "url": "https://mcp.posetracker.com/api/mcp"
+        }
+      }
+    }
+    ```
+
+    Open **Settings → MCP** and click **Connect** next to posetracker.
+  </Tab>
+  <Tab title="Other clients">
+    Any MCP client that supports remote Streamable HTTP with OAuth. Point it at the connector URL above.
+  </Tab>
+</Tabs>
+
+## What happens when you connect
+
+<Steps>
+  <Step title="The agent opens the consent page">
+    Your browser goes to [app.posetracker.com/oauth/authorize](https://app.posetracker.com/oauth/authorize).
+  </Step>
+  <Step title="You sign in">
+    Use an existing account, or create one on that page. The checks are the same as a normal signup (reCAPTCHA, terms). Google sign-in works too.
+  </Step>
+  <Step title="You click Allow">
+    The card shows your email, your plan and what the agent will be able to do.
+  </Step>
+  <Step title="The browser returns to the agent">
+    The agent can now call the tools below as you.
+  </Step>
+</Steps>
+
+The agent never creates an account by itself and never pays by itself. A plan change is a Stripe link that **you** open and confirm.
+
+Disconnect any time: **Settings → Account → Connected agents → Disconnect**. The agent loses access immediately.
+
+## What you can ask
+
+After **Allow**, a useful first message is: “What is my PoseTracker account status?” The agent should answer with your email, plan and remaining credits.
+
+Then you can ask it to wire an exercise into your app. For a catalog movement (`squat`, `push_up`, a [physical test](/reference/physical-tests)), it should use `integration_snippet` and keep `YOUR_API_KEY` as a placeholder until it stores the real key in your environment. For a movement that is not in the catalog, it talks to the assistant, saves the draft, then generates the snippet.
+
+## Tools
+
+| Tool | What it does | Scope |
+|---|---|---|
+| `account_status` | Email, plan, remaining tracking and AI credits | `account` |
+| `billing_checkout_link` | Stripe checkout (Developer plan) or billing-portal link for you to open | `billing` |
+| `account_api_key` | Your tracking API key, to replace `YOUR_API_KEY` in the snippets | `api_key` |
+| `exercises_list` | Official exercises (V3, V4), jumps, flexibility poses, physical tests, stacks and URL params | `exercises` |
+| `integration_snippet` | Ready-to-paste iframe, React or React Native code for an exercise or one of your custom movements | `exercises` |
+| `exercise_list_mine` | Your saved custom movements | `exercises` |
+| `assistant_turn` | One turn with the PoseTracker assistant, for integrations or custom movements (`mode: "movement"`) | `assistant` |
+| `exercise_save` | Save the current movement draft of an assistant thread as a custom exercise | `assistant` |
+| `skeleton_preset` | Your skeleton overlay presets and how to reference them (`?skeleton=<id>`) | `skeleton` |
+
+Resource: `posetracker://docs/llms.txt`, the index of these docs.
+
+## The API key
+
+Snippets always contain the placeholder `YOUR_API_KEY`. The agent calls `account_api_key` and puts the key in your app's environment or config, not in source control. Do not paste your key in the chat, and do not ask the agent to write it in docs or commits.
+
+`assistant_turn` never sees the key. The assistant model only gets the same limited context as in the app.
+
+## Credits and limits
+
+`assistant_turn` and `exercise_save` run the same pipeline as the app's assistant: same rails, same AI-credit debit, same daily limits per plan. Catalog snippets and known actions cost 0 AI credit. When credits run out, the tool returns `code: "ai_credits_exhausted"`. The agent should call `billing_checkout_link` and hand you the link.
+
+Tracking itself (the counted reps in your app) is billed exactly as without the connector.
+
+## For agents
+
+- Start with `account_status`, then `exercises_list`.
+- Prefer `integration_snippet` for catalog exercises (0 AI credit). Use `assistant_turn` with `mode: "movement"` only for movements that are not in the catalog, then `exercise_save`, then `integration_snippet` with `user_exercise_id`.
+- Read the key with `account_api_key` and store it in env or config. Never echo it.
+- You cannot pay. Give the human the link from `billing_checkout_link`.
+- Connector URL: `https://mcp.posetracker.com/api/mcp`. Consent: `https://app.posetracker.com/oauth/authorize`.

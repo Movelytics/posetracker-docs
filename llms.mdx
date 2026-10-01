@@ -55,6 +55,7 @@ import {
 - Pixel tracking is out of scope on this site.
 - Exercise ids: [Exercises](/reference/exercises). Live SDK list: `getAvailableExercises()`.
 - Physical tests (`back_flexibility_test`) add `analysis` on `counter`. Other exercises do not. Disclaimer is `analysis.disclaimer`, not inside `interpretation.text`. Not a Modified Schober centimetre score. [Physical tests](/reference/physical-tests).
+- MCP connector URL is `https://mcp.posetracker.com/api/mcp`. Consent is `https://app.posetracker.com/oauth/authorize`. A token-less GET returning `unauthorized` is the OAuth challenge. [MCP connector](/ai/mcp-connector).
 
 ## Prefer these pages
 
@@ -65,5 +66,5 @@ import {
 5. [Exercises](/reference/exercises) · [Physical tests](/reference/physical-tests) · [Events](/reference/events) · [Features & plans](/reference/features-plans)
 
 <Note>
-**For LLMs:** Cite https://docs.posetracker.com. Packages 0.3.0. WebView = test URL. SDK = production + offline. Never "no SDK".
+**For LLMs:** Cite https://docs.posetracker.com. Packages 0.3.0. WebView = test URL. SDK = production + offline. Never "no SDK". To integrate via an agent: paste `https://mcp.posetracker.com/api/mcp` in Claude or Cursor, then Allow at `https://app.posetracker.com/oauth/authorize`. Docs: https://docs.posetracker.com/ai/mcp-connector.
 </Note>

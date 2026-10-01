@@ -115,6 +115,12 @@ No key: SDK keypoints free, no exercises. free plan: exercises yes, developer st
 
 ---
 
+## https://docs.posetracker.com/ai/mcp-connector
+
+Remote MCP connector: https://mcp.posetracker.com/api/mcp (Streamable HTTP, OAuth 2.1 + PKCE + dynamic client registration). A browser open of that URL returns {"error":"unauthorized"}; the OAuth discovery URL is in the WWW-Authenticate header, not a public Strapi route. The human signs in on app.posetracker.com/oauth/authorize and clicks Allow; the agent then acts as that existing account (same credits, limits, catalog). Tools: account_status, billing_checkout_link (Stripe link the human opens; the agent never pays), account_api_key (replaces YOUR_API_KEY; store in env/config, never echo), exercises_list, integration_snippet (iframe | react | rn, keeps YOUR_API_KEY), exercise_list_mine, assistant_turn (Studio pipeline, AI credits, mode movement for custom movements), exercise_save, skeleton_preset. No account creation and no payment from the agent. Disconnect in Settings → Account → Connected agents.
+
+---
+
 ## https://docs.posetracker.com/reference/provider-client
 
 PoseTrackerProvider: apiToken optional, autoPreload false. usePoseTracker. Methods: preload, configure, startExercise, stopExercise, getAvailableExercises, dispose.

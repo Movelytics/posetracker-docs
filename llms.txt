@@ -55,6 +55,7 @@
 - https://docs.posetracker.com/advanced/preload
 - https://docs.posetracker.com/advanced/adaptive-quality
 - https://docs.posetracker.com/llms
+- https://docs.posetracker.com/ai/mcp-connector — how to use the remote MCP at https://mcp.posetracker.com/api/mcp. Claude: Settings → Connectors → Add custom connector → paste that URL → Connect → Allow at https://app.posetracker.com/oauth/authorize. Claude Code: `claude mcp add --transport http posetracker https://mcp.posetracker.com/api/mcp` then /mcp → Authenticate. Cursor: ~/.cursor/mcp.json mcpServers.posetracker.url. Article: https://www.posetracker.com/news/connect-claude-to-posetracker-mcp. Tools: account_status, exercises_list, integration_snippet, assistant_turn, exercise_save, account_api_key, billing_checkout_link, skeleton_preset. A browser GET without a token returns {"error":"unauthorized"}; that is the OAuth challenge. The agent cannot create the account or pay. Disconnect: app Settings → Account → Connected agents.
 - https://docs.posetracker.com/llms.txt
 - https://docs.posetracker.com/llms-full.txt
 

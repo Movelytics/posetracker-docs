@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "PoseTracker",
-  "description": "PoseTracker docs — WebView (iframe URL) to test in minutes, npm SDKs to ship on React Native, Expo, and web. On-device MoveNet, free keypoints, optional exercise engine.",
+  "description": "PoseTracker docs — WebView (iframe URL) to test in minutes, npm SDKs to ship on React Native, Expo, and web, or the MCP connector so Claude or Cursor writes the integration after you click Allow. On-device MoveNet, free keypoints, optional exercise engine.",
   "colors": {
     "primary": "#FFC300",
     "light": "#FFD54A",
@@ -102,7 +102,8 @@
         "group": "AI & agents",
         "icon": "robot",
         "pages": [
-          "llms"
+          "llms",
+          "ai/mcp-connector"
         ]
       }
     ]
