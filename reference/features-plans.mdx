@@ -88,12 +88,16 @@ Authoritative counted-rep grade: nested on `onCounter` → `formScore` (classic 
 
 ## Watermark
 
+On the free plan, and when no API key is set, the live camera shows a dofollow link. The anchor text is **Powered by PoseTracker**. It opens `https://www.posetracker.com/` with `utm_source=watermark`. The medium is `webview` on the tracking page, `react-native` in the React Native SDK (`Linking.openURL`), and `web-sdk` in the web SDK.
+
+Developer and Business plans do not show the link. The same removal applies to any paid plan (`developer`, `company`, `enterprise`, custom).
+
 | Plan | Watermark on live camera |
 |---|---|
-| Keyless / `free` | Shown |
+| Keyless / `free` | Link shown |
 | Paid | Hidden |
 
-Override: `WebViewPoseView` `showWatermark`. Off for `coldStart: 'basic'` warmers.
+To remove it on a build that would otherwise show it, set `showWatermark={false}` on `WebViewPoseView` (React Native) or `showWatermark: false` in `createPoseTracker` (web). Omitting the prop keeps the plan rule. `coldStart: 'basic'` warmers never show it. A plan upgrade after `configure()` hides it without remounting.
 
 ## WebView param → SDK map
 
