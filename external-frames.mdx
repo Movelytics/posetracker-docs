@@ -17,6 +17,17 @@ This is an SDK API on all four packages. It is not the hosted iframe, and it is 
 A still image or a video file is a different API. Use [Media sources](/media-sources) (`source="image"` / `setSource`). External frames are a **live pump**: you send the next image only after the previous call resolves.
 </Info>
 
+You keep the camera and the preview. PoseTracker does not open a camera in this mode, and it does not draw a skeleton.
+
+Send one image, wait until the call resolves, then send the next. A second call that arrives early is dropped.
+
+The result for that frame is the pose, plus any exercise events if you already started one.
+
+- Call `warmupExternal()` once, before the first frame.
+- Call `startExercise()` once for the movement, not on every frame.
+- Keep the longest side at 256 pixels or less.
+- Put the capture clock in `timestampMs`, not the time the promise resolves.
+
 ## Contract
 
 ```ts
