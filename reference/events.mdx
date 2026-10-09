@@ -18,6 +18,8 @@ usePoseTracker({
 
 Imperative: `client.addEventListener` / `client.addMessageListener`.
 
+[External frames](/external-frames) (`processFrame`) emit this same catalog. The promise's `events` array is the subset produced by that frame; listeners still receive every event.
+
 ## Keypoints-only (no API token)
 
 | Typed callback | Classic `type` | When |

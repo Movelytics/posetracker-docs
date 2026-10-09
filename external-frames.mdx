@@ -1,0 +1,548 @@
+---
+title: "External frames"
+description: "Keep your camera and your preview. Push each frame to PoseTracker and get keypoints, placement, and rep data back. The SDK draws nothing."
+keywords:
+  - Vision Camera
+  - expo-camera
+  - getUserMedia
+  - processFrame
+  - custom camera
+---
+
+Use this when the app already owns the camera. PoseTracker stays the data layer: it runs pose estimation and, once you start an exercise, tracks that movement across frames. You decide what to draw.
+
+This is an SDK API on all four packages. It is not the hosted iframe, and it is not a new camera view. The default path is unchanged: [`WebViewPoseView`](/reference/webview-pose-view) on React Native and [`PoseCamera`](/web-sdks) on the web still open the camera for you.
+
+<Info>
+A still image or a video file is a different API. Use [Media sources](/media-sources) (`source="image"` / `setSource`). External frames are a **live pump**: you send the next image only after the previous call resolves.
+</Info>
+
+## Contract
+
+```ts
+await warmupExternal();          // model only — no camera permission
+startExercise('squat');          // same call as the camera path; optional
+const result = await processFrame(frame);
+// result = { dropped, pose, events }
+```
+
+| | React Native | Web |
+|---|---|---|
+| Packages | `@pose-tracker/react-native-pose-estimation` and `-light` | `@pose-tracker/pose-estimation-web` and `-web-react` |
+| Warm-up | `warmupExternal()` | `warmupExternal()` — no `mount()`, no `getUserMedia` |
+| Frame | `{ base64? , uri? , width, height, timestampMs, mirrored?, mime? }` | same, or `{ image, width, height, timestampMs, mirrored? }` |
+| `base64` | JPEG or PNG **without** the `data:` prefix | same |
+| `uri` | `file://`, `data:`, or `https:` the WebView can load | `blob:`, `data:`, or a CORS-enabled `https:` URL |
+| `image` | — | `ImageBitmap`, `<img>`, `<canvas>`, or `<video>` (preferred) |
+| Result | `{ dropped, pose, events }` | same |
+
+`mirrored` defaults to `true`. `mime` defaults to `image/jpeg`.
+
+`events` is only what **this** frame produced (keypoints, posture, counter, …), in emission order. The same events are delivered to `usePoseTracker` / `on()` **before** the promise resolves. A dropped frame returns `{ dropped: true, pose: lastPose, events: [] }` and emits nothing new.
+
+With an API key, `warmupExternal()` counts **one** session, the same way opening the SDK camera does. Later frames are not counted again.
+
+## Coordinates
+
+Keypoints are normalized **0–1 on the image you sent**, origin top-left, after the mirror flag.
+
+| You draw on | Pass |
+|---|---|
+| The same pixels you sent (the JPEG, the canvas, the bitmap) | `mirrored: false` |
+| A preview that is a horizontal flip of those pixels (typical front-camera preview) | `mirrored: true` (the default) |
+
+```ts
+const x = keypoint.x * viewWidth;
+const y = keypoint.y * viewHeight;
+```
+
+That mapping is exact when the view shows the whole frame, same aspect ratio. If the preview crops (`object-fit: cover`, Vision Camera's default crop), map through that crop. Do not assume the view size is the frame size.
+
+`timestampMs` is the **capture** time. The exercise engine uses it for rep timing. Pass the clock at capture, not the time `processFrame` resolves.
+
+## Rules
+
+<Steps>
+  <Step title="Warm up once">
+    `await warmupExternal()` before any `processFrame`. A second call is a no-op. On React Native the Provider mounts a hidden 1×1 page for this (`coldStart="basic"`). You do not add that view yourself. If a `WebViewPoseView` is already on screen, that page is reused.
+  </Step>
+  <Step title="Start the exercise once">
+    `startExercise('squat')` uses the same engine as the camera path. Frame N+1 continues that squat. Do not call it again per frame. `stopExercise()` ends the session.
+  </Step>
+  <Step title="Send one small frame at a time">
+    Await the promise, then send the next image. An overlapping call is dropped. Keep the longest side at **256 px or less**.
+  </Step>
+</Steps>
+
+<Warning>
+A 1080p JPEG per frame is not a real-time path. On React Native the bytes cross the WebView bridge, then get decoded. Resize in the camera pipeline, then send the small JPEG. The SDK does not downscale for you.
+</Warning>
+
+Do not mix the two flows on one client. `processFrame` throws while the SDK camera is open (`WebViewPoseView` with the camera running, or web `start()`). Close that session first, or use a client that never mounts the SDK camera.
+
+The light React Native package and the web packages still need **network** to load MoveNet. The offline React Native package does not, for keypoints. Exercises follow the usual API-key rules — [API key](/api-key).
+
+On React Native this mode does not emit `stats`, `quality_changed`, or `performance_warning`. Those events drive the SDK camera (resolution changes, reopening `getUserMedia`). The hidden page must not touch a camera. On the web, `stats` still fires about once a second.
+
+## React Native
+
+No `WebViewPoseView` in this tree. Your camera component is the preview. PoseTracker only returns data.
+
+```tsx
+import { useEffect, useRef, useState } from 'react';
+import { PoseTrackerProvider, usePoseTracker } from '@pose-tracker/react-native-pose-estimation';
+// Light package: @pose-tracker/react-native-pose-estimation-light (needs network)
+
+function Screen() {
+  const [reps, setReps] = useState(0);
+  const [hint, setHint] = useState('Face the camera');
+  const { warmupExternal, startExercise, stopExercise, processFrame } = usePoseTracker({
+    onCounter: (e) => setReps(e.count),
+    onPosture: (e) => setHint(e.hint),
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      await warmupExternal();
+      if (!cancelled) startExercise('squat');
+    })();
+    return () => {
+      cancelled = true;
+      stopExercise();
+    };
+  }, [warmupExternal, startExercise, stopExercise]);
+
+  // Your camera calls push() with a JPEG whose longest side is ≤ 256.
+  async function push(jpeg: { base64: string; width: number; height: number; mirrored: boolean }) {
+    const { dropped, pose, events } = await processFrame({
+      base64: jpeg.base64,
+      mime: 'image/jpeg',
+      width: jpeg.width,
+      height: jpeg.height,
+      timestampMs: Date.now(),
+      mirrored: jpeg.mirrored,
+    });
+    if (dropped || !pose) return;
+    // pose.keypoints — draw these on your preview
+    // events — counter / posture / angles for this frame (listeners already ran)
+    void events;
+  }
+
+  return null; // replace with your camera; see the tabs below
+}
+```
+
+Wrap `Screen` in `<PoseTrackerProvider apiToken="YOUR_API_KEY">`. Omit the token for keypoints only.
+
+<Warning>
+During an exercise, raw `keypoints` events are paused unless `options.features.keypoints` is on (paid plans). `counter`, `posture`, and the other exercise events still fire. Keypoints-only mode (no `startExercise`) always streams keypoints.
+</Warning>
+
+### Vision Camera
+
+[`react-native-vision-camera`](https://react-native-vision-camera.com/) owns the preview. Two ways to feed PoseTracker:
+
+- **Real-time:** in a frame processor, resize so the longest side is ≤ 256, JPEG-encode, then hop to JS and `await processFrame`. Run the processor around 12 fps (`runAtTargetFps`). The encode step is native code (a frame-processor plugin). PoseTracker accepts the JPEG, not the raw camera buffer.
+- **Simple loop:** `takeSnapshot` plus [`expo-image-manipulator`](https://docs.expo.dev/versions/latest/sdk/imagemanipulator/) to resize. This is a few frames per second, not a 30 fps path. Useful to wire the screen before the encoder exists.
+
+`takeSnapshot` returns pixels that may already be mirrored (`photo.isMirrored`). Pass `mirrored: !photo.isMirrored` when you draw on the Vision Camera preview (the preview is mirrored for the front camera; a mirrored file already matches it).
+
+```tsx
+import { useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+import { PoseTrackerProvider, usePoseTracker } from '@pose-tracker/react-native-pose-estimation';
+
+function SquatCamera() {
+  const device = useCameraDevice('front');
+  const { hasPermission, requestPermission } = useCameraPermission();
+  const camera = useRef<Camera>(null);
+  const busy = useRef(false);
+  const [reps, setReps] = useState(0);
+  const [hint, setHint] = useState('Face the camera');
+  const { warmupExternal, startExercise, stopExercise, processFrame, status } = usePoseTracker({
+    onCounter: (e) => setReps(e.count),
+    onPosture: (e) => setHint(e.hint),
+  });
+
+  useEffect(() => {
+    if (!hasPermission) void requestPermission();
+  }, [hasPermission, requestPermission]);
+
+  useEffect(() => {
+    if (!device || !hasPermission) return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    async function pump() {
+      if (cancelled) return;
+      if (!camera.current || busy.current) {
+        timer = setTimeout(pump, 80);
+        return;
+      }
+      busy.current = true;
+      try {
+        const shot = await camera.current.takeSnapshot({ quality: 60 });
+        const uri = shot.path.startsWith('file:') ? shot.path : `file://${shot.path}`;
+        const small = await manipulateAsync(
+          uri,
+          [{ resize: { width: 256 } }],
+          { compress: 0.7, format: SaveFormat.JPEG, base64: true },
+        );
+        const result = await processFrame({
+          base64: small.base64 ?? '',
+          mime: 'image/jpeg',
+          width: small.width,
+          height: small.height,
+          timestampMs: Date.now(),
+          // File already matches the mirrored preview → do not flip again.
+          mirrored: !shot.isMirrored,
+        });
+        if (!result.dropped && result.pose) {
+          // Draw result.pose.keypoints in a sibling overlay (0–1 × your layout).
+        }
+      } catch {
+        // Snapshot fails while the camera session is still starting.
+      } finally {
+        busy.current = false;
+        if (!cancelled) timer = setTimeout(pump, 80);
+      }
+    }
+
+    void (async () => {
+      await warmupExternal();
+      if (cancelled) return;
+      startExercise('squat');
+      void pump();
+    })();
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+      stopExercise();
+    };
+  }, [device, hasPermission, warmupExternal, startExercise, stopExercise, processFrame]);
+
+  if (!device || !hasPermission) return <Text>Camera permission</Text>;
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Camera ref={camera} style={StyleSheet.absoluteFill} device={device} isActive />
+      <Text>{status} · {reps} · {hint}</Text>
+    </View>
+  );
+}
+
+export function App() {
+  return (
+    <PoseTrackerProvider apiToken="YOUR_API_KEY">
+      <SquatCamera />
+    </PoseTrackerProvider>
+  );
+}
+```
+
+Frame-processor shape (real-time), once a native encoder gives you a small JPEG:
+
+```tsx
+import { runAtTargetFps } from 'react-native-vision-camera';
+import { Worklets } from 'react-native-worklets-core';
+
+const onJpeg = Worklets.createRunOnJS((jpeg: { base64: string; width: number; height: number }) => {
+  void push(jpeg); // the helper above; it awaits processFrame and ignores overlaps
+});
+
+const frameProcessor = useFrameProcessor((frame) => {
+  'worklet';
+  runAtTargetFps(12, () => {
+    'worklet';
+    // Resize (longest side ≤ 256) and JPEG-encode in native code, then:
+    // onJpeg({ base64, width, height });
+    void frame;
+  });
+}, []);
+```
+
+PoseTracker does not read `frame` itself. A raw RGB buffer or a `vision-camera-resize-plugin` array is not a `processFrame` input.
+
+### expo-camera
+
+[`CameraView`](https://docs.expo.dev/versions/latest/sdk/camera/) is the preview. `takePictureAsync` goes through the shutter path, so treat it as a slow loop and still resize. Set `mirror` on `CameraView` so the saved JPEG matches the front-camera preview, then pass `mirrored: false`. (`mirror` on `takePictureAsync` is deprecated.)
+
+```tsx
+import { useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+import { usePoseTracker } from '@pose-tracker/react-native-pose-estimation';
+
+function ExpoSquat() {
+  const camera = useRef<CameraView>(null);
+  const busy = useRef(false);
+  const [permission, requestPermission] = useCameraPermissions();
+  const [reps, setReps] = useState(0);
+  const { warmupExternal, startExercise, stopExercise, processFrame } = usePoseTracker({
+    onCounter: (e) => setReps(e.count),
+  });
+
+  useEffect(() => {
+    if (permission && !permission.granted) void requestPermission();
+  }, [permission, requestPermission]);
+
+  useEffect(() => {
+    if (!permission?.granted) return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    async function pump() {
+      if (cancelled || !camera.current || busy.current) return;
+      busy.current = true;
+      try {
+        const photo = await camera.current.takePictureAsync({
+          base64: false,
+          quality: 0.4,
+          shutterSound: false,
+        });
+        if (photo?.uri) {
+          const small = await manipulateAsync(
+            photo.uri,
+            [{ resize: { width: 256 } }],
+            { compress: 0.7, format: SaveFormat.JPEG, base64: true },
+          );
+          await processFrame({
+            base64: small.base64 ?? '',
+            mime: 'image/jpeg',
+            width: small.width,
+            height: small.height,
+            timestampMs: Date.now(),
+            mirrored: false,
+          });
+        }
+      } catch {
+        // Camera not ready yet.
+      } finally {
+        busy.current = false;
+        if (!cancelled) timer = setTimeout(pump, 200);
+      }
+    }
+
+    void (async () => {
+      await warmupExternal();
+      if (cancelled) return;
+      startExercise('squat');
+      void pump();
+    })();
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+      stopExercise();
+    };
+  }, [permission?.granted, warmupExternal, startExercise, stopExercise, processFrame]);
+
+  if (!permission?.granted) return <Text>Camera permission</Text>;
+
+  return (
+    <View style={{ flex: 1 }}>
+      <CameraView ref={camera} style={StyleSheet.absoluteFill} facing="front" mirror />
+      <Text>{reps}</Text>
+    </View>
+  );
+}
+```
+
+`expo-camera` here is the **camera**, not only the permission API. The SDK quickstart uses `expo-camera` only to ask for permission, then lets `WebViewPoseView` capture. Do not mount both capture paths.
+
+### CameraX, AVFoundation, or another native pipeline
+
+The SDK call stays in JavaScript. The native layer's job is to write a JPEG (longest side ≤ 256) and hand it to JS:
+
+| Field | Value |
+|---|---|
+| `base64` | JPEG bytes, no `data:` prefix. Or `uri` with a `file://` the WebView can read (`content://` is unreliable — copy it into the cache first). |
+| `width`, `height` | Pixel size of that JPEG. |
+| `timestampMs` | Capture time, monotonic across the set. |
+| `mirrored` | `false` if the JPEG matches the preview you draw on. `true` if the preview is a horizontal flip of the JPEG. |
+
+Call `processFrame` from JS and **await** it. A worklet or a camera callback that fires again before the promise resolves should drop that frame locally. The SDK drops it too, but you still pay for the bridge if you already injected the JPEG.
+
+## Web
+
+No `mount()`, no `PoseCamera`, no overlay. Draw your own `<video>` (CSS-mirrored if you want a selfie) and a canvas for the skeleton.
+
+```ts
+import { createPoseTracker } from '@pose-tracker/pose-estimation-web';
+
+const video = document.querySelector('video') as HTMLVideoElement;
+const overlay = document.querySelector('canvas') as HTMLCanvasElement;
+const ctx = overlay.getContext('2d')!;
+
+const stream = await navigator.mediaDevices.getUserMedia({
+  video: { facingMode: 'user', width: { ideal: 640 } },
+  audio: false,
+});
+video.srcObject = stream;
+await video.play();
+
+const pt = createPoseTracker({ model: 'movenet' });
+await pt.configure('YOUR_API_KEY'); // skip for keypoints only
+await pt.warmupExternal();
+pt.startExercise('squat');
+pt.on('counter', (e) => console.log(e.count));
+
+const scratch = document.createElement('canvas');
+const sctx = scratch.getContext('2d')!;
+
+async function tick() {
+  const scale = Math.min(1, 256 / Math.max(video.videoWidth, video.videoHeight));
+  scratch.width = Math.round(video.videoWidth * scale);
+  scratch.height = Math.round(video.videoHeight * scale);
+  sctx.drawImage(video, 0, 0, scratch.width, scratch.height);
+
+  const { dropped, pose } = await pt.processFrame({
+    image: scratch,
+    width: scratch.width,
+    height: scratch.height,
+    timestampMs: performance.now(),
+    // video pixels are not flipped; a CSS scaleX(-1) preview is. Default true matches that.
+    mirrored: true,
+  });
+
+  if (!dropped && pose) {
+    overlay.width = video.clientWidth;
+    overlay.height = video.clientHeight;
+    ctx.clearRect(0, 0, overlay.width, overlay.height);
+    for (const k of pose.keypoints) {
+      if (k.score < 0.3) continue;
+      ctx.fillRect(k.x * overlay.width - 3, k.y * overlay.height - 3, 6, 6);
+    }
+  }
+  requestAnimationFrame(() => void tick());
+}
+void tick();
+```
+
+Prefer `image` (the canvas or an `ImageBitmap`) over `base64`. `fetch` + `createImageBitmap` on a data URL is the slow path.
+
+`requestAnimationFrame` only schedules the next frame **after** the await, so a single loop stays at one frame in flight. A second loop calling `processFrame` at the same time receives `dropped: true`.
+
+Stop with `pt.stopExercise()` and `stream.getTracks().forEach((t) => t.stop())`. Do not call `pt.start()` on this client while the pump is running.
+
+### React
+
+Same client, no `<PoseCamera />`.
+
+```tsx
+import { useEffect, useRef } from 'react';
+import {
+  PoseTrackerProvider,
+  usePoseTracker,
+} from '@pose-tracker/pose-estimation-web-react';
+
+function Cam() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const { warmupExternal, startExercise, stopExercise, processFrame } = usePoseTracker({
+    onCounter: (e) => console.log(e.count),
+    onPosture: (e) => console.log(e.hint),
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    const video = videoRef.current!;
+    const scratch = document.createElement('canvas');
+    const sctx = scratch.getContext('2d')!;
+
+    void (async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user' },
+        audio: false,
+      });
+      video.srcObject = stream;
+      await video.play();
+      await warmupExternal();
+      if (cancelled) return;
+      startExercise('squat');
+
+      const tick = async () => {
+        if (cancelled) return;
+        const scale = Math.min(1, 256 / Math.max(video.videoWidth, video.videoHeight));
+        scratch.width = Math.max(1, Math.round(video.videoWidth * scale));
+        scratch.height = Math.max(1, Math.round(video.videoHeight * scale));
+        sctx.drawImage(video, 0, 0, scratch.width, scratch.height);
+        await processFrame({
+          image: scratch,
+          width: scratch.width,
+          height: scratch.height,
+          timestampMs: performance.now(),
+          mirrored: true,
+        });
+        if (!cancelled) requestAnimationFrame(() => void tick());
+      };
+      void tick();
+    })();
+
+    return () => {
+      cancelled = true;
+      stopExercise();
+      const stream = video.srcObject as MediaStream | null;
+      stream?.getTracks().forEach((t) => t.stop());
+    };
+  }, [warmupExternal, startExercise, stopExercise, processFrame]);
+
+  return <video ref={videoRef} autoPlay playsInline muted style={{ transform: 'scaleX(-1)', width: 480 }} />;
+}
+
+export function App() {
+  return (
+    <PoseTrackerProvider apiToken="YOUR_API_KEY" options={{ model: 'movenet' }}>
+      <Cam />
+    </PoseTrackerProvider>
+  );
+}
+```
+
+## What comes back
+
+Listeners and `result.events` use the [same event types](/reference/events) as the camera path.
+
+| Event | When |
+|---|---|
+| `keypoints` | Every accepted frame in keypoints-only mode. During an exercise, only if `features.keypoints` is on. |
+| `posture` | Exercise running. `ready` and `hint` are the placement message ("Face the camera", "Get ready…"). |
+| `counter` | A rep was counted. `count`, `formScore`. |
+| `angles`, `progression`, `recommendations`, `form_score` | Exercise running and the feature flag is on. |
+| `initialization` | Warm-up and engine download. These fire on the listeners at warm-up time, not inside later frame results. |
+| `exercise_summary` | `stopExercise()`, on the listeners. |
+| `error` | Model, token, quota, or a frame the runtime could not decode. |
+
+`pose` is `{ keypoints, score, timestampMs }`. `keypoints[i]` is `{ name, x, y, score }` with `x` and `y` in 0–1. Seventeen COCO points, same order as the camera path.
+
+Without `startExercise`, you get keypoints and no counter. The engine is not reset between frames: two accepted frames of one squat can advance `counter` from 1 to 2.
+
+## Errors
+
+| Call | Throws |
+|---|---|
+| `processFrame` before `warmupExternal()` resolves | `call warmupExternal() and wait for it to resolve first` |
+| SDK camera already open (RN) | `the SDK camera is open on this client` |
+| `start()` already running (web) | `cannot run together` |
+| Frame has no `base64`, `uri`, or `image` | `pass image, base64, or uri` / `frame requires base64 or uri` |
+| React Native and no page is attached | `no WebViewPoseView is attached` — the Provider mounts it after `warmupExternal()`; wait for that call |
+| WebView torn down mid-frame | `detached` |
+
+A frame that arrives while one is running does **not** throw. It resolves `{ dropped: true, pose: lastPose, events: [] }`.
+
+## What this is not
+
+- Not [`WebViewPoseView`](/reference/webview-pose-view) / [`PoseCamera`](/web-sdks). Those open the camera and can draw the skeleton.
+- Not [Media sources](/media-sources). `source="image"` and `setSource({ type: 'image' })` are one shot, and `setSource` resets temporal state.
+- Not the hosted tracking URL, and not the deprecated pixel (`app.posetracker.com/pose_tracker/pixel`). Nothing on that URL is part of this mode.
+
+## Next
+
+- [Events](/reference/events)
+- [Exercises](/reference/exercises)
+- [Provider & client](/reference/provider-client)
+- [API key](/api-key)

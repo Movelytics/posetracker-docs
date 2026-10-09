@@ -74,6 +74,7 @@
           "web-sdks",
           "permissions",
           "media-sources",
+          "external-frames",
           "keypoints",
           "api-key"
         ]

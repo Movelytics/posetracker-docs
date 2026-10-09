@@ -6,6 +6,8 @@ description: "Camera, uploaded video, and still image inputs for React Native an
 PoseTracker accepts three input modes on **all four** npm packages (v**0.3.0**).
 Default is live **camera**. This page is the **SDK** API. The hosted upload WebView is a different URL: [Upload tracking](/webview/upload).
 
+Already capturing with your own camera (Vision Camera, expo-camera, `getUserMedia`)? Push each frame and read the data back — [External frames](/external-frames). That mode draws nothing. The image mode on this page is one shot, not a live pump.
+
 | Mode | What you pass | Keypoints |
 |---|---|---|
 | **camera** (default) | Nothing extra (optional facing / `position`) | Continuous |
@@ -76,9 +78,11 @@ await pt.analyze();     // same still again
 
 ### Script tag
 
+Load TensorFlow.js first (4.22.0 when these docs were written), then the PoseTracker IIFE.
+
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@pose-tracker/pose-estimation-web@0.3.0/dist/pose-tracker.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@pose-tracker/pose-estimation-web/dist/pose-tracker.global.js"></script>
 <script>
   const pt = PoseTracker.createPoseTracker({ model: 'movenet', drawSkeleton: true });
   pt.mount('#root');

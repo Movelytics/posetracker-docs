@@ -112,7 +112,9 @@ const {
 | `configure` | `(apiToken?: string) => Promise<boolean>` | Hot (re)config; `true` when full-engine. Does not restart the camera pipeline. |
 | `startExercise` | `(exerciseId: string, options?: StartExerciseOptions) => void` | Catalog id or custom jump. Requires full-engine. Unknown id → `invalid_exercise`. |
 | `stopExercise` | `() => void` | Ends session; may emit `exercise_summary`. |
-| `estimatePose` / `processFrame` | `(frame) => Promise<Pose \| null>` | Advanced / vision-camera path. |
+| `warmupExternal` | `() => Promise<void>` | Model only, no camera. Required before external frames. See [External frames](/external-frames). |
+| `processFrame` | external frame → `Promise<{ dropped, pose, events }>` | Host camera. One frame in flight. Same exercise session as `startExercise`. |
+| `estimatePose` | `(frame: PoseInputFrame) => Promise<Pose \| null>` | Legacy tensor / vision-camera buffer. Not the external-frames API. |
 | `addEventListener` | `(listener) => () => void` | Typed events. |
 | `addMessageListener` | `(listener) => () => void` | Classic WebView JSON. |
 
@@ -186,5 +188,5 @@ Injectables (`backend`, `engineLoader`, `fileStore`, `usageTracker`) exist for t
 </Info>
 
 <Note>
-**For LLMs:** SDK params live on `PoseTrackerProvider` / `options` / `startExercise`, not URL query strings. Keypoints need no `apiToken`. Overlay/timer/reference/userExercise are WebView-only. https://docs.posetracker.com/reference/provider-client
+**For LLMs:** SDK params live on `PoseTrackerProvider` / `options` / `startExercise`, not URL query strings. Keypoints need no `apiToken`. Overlay/timer/reference/userExercise are WebView-only. Host-owned camera: `warmupExternal` + `processFrame` — https://docs.posetracker.com/external-frames. https://docs.posetracker.com/reference/provider-client
 </Note>

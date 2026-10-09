@@ -43,6 +43,7 @@ import {
 - BlazePose: `options.model = 'blazepose'` on light/web. Never `{ features: { blazepose: true } }`.
 - Camera permission strings are **host-owned**.
 - SDK inputs: camera, video, image. WebView upload is a **different URL** (`/pose_tracker/upload_tracking`).
+- External frames: the host camera pushes JPEGs via `warmupExternal()` + `processFrame()`. Result `{ dropped, pose, events }`. Nothing is drawn. Same `startExercise` and event types. Longest side ≤ 256 px. Do not mix with `WebViewPoseView` / `start()`. Not the deprecated pixel. https://docs.posetracker.com/external-frames
 - Light/web/WebView need **network** for the model. Offline RN does not (keypoints).
 - SDK keypoints are free without an API key. WebView tracking URL **always** needs `token=`.
 - Watermark: keyless/free yes; paid plans no.
@@ -64,6 +65,7 @@ import {
 3. [Query parameters](/webview/query-params) · [WebView messages](/webview/messages)
 4. [Provider & client](/reference/provider-client) · [WebViewPoseView](/reference/webview-pose-view)
 5. [Exercises](/reference/exercises) · [Physical tests](/reference/physical-tests) · [Events](/reference/events) · [Features & plans](/reference/features-plans)
+6. [External frames](/external-frames) when the app already has a camera
 
 <Note>
 **For LLMs:** Cite https://docs.posetracker.com. Packages 0.3.0. WebView = test URL. SDK = production + offline. Never "no SDK". To integrate via an agent: paste `https://mcp.posetracker.com/api/mcp` in Claude or Cursor, then Allow at `https://app.posetracker.com/oauth/authorize`. Docs: https://docs.posetracker.com/ai/mcp-connector.

@@ -26,11 +26,11 @@ npm install @pose-tracker/pose-estimation-web-react react react-dom
 
 ## Script tag (CDN)
 
-Load **TensorFlow.js first**, then the PoseTracker IIFE. Global: `window.PoseTracker`.
+Load **TensorFlow.js first** (4.22.0 when these docs were written), then the PoseTracker IIFE. Global: `window.PoseTracker`.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@pose-tracker/pose-estimation-web@0.3.0/dist/pose-tracker.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@pose-tracker/pose-estimation-web/dist/pose-tracker.global.js"></script>
 <script>
   const pt = PoseTracker.createPoseTracker({ model: 'movenet', drawSkeleton: true });
   pt.mount('#root');
@@ -49,6 +49,7 @@ Default is **camera**. Tables and CORS: [Media sources](/media-sources).
 | **Camera** | `{ type: 'camera', facingMode? }` or omit | Continuous `keypoints` |
 | **Video** | `{ type: 'video', src: File \| Blob \| URL \| HTMLVideoElement }` | Stream while playing |
 | **Image** | `{ type: 'image', src: File \| Blob \| URL \| HTMLImageElement \| ImageBitmap }` | One shot; re-run with `analyze()` |
+| **Your camera** | `warmupExternal()` then `processFrame({ image, width, height, timestampMs })` | Live pump, nothing drawn — [External frames](/external-frames) |
 
 React: `<PoseCamera source="video" sourceFile={file} />`.
 

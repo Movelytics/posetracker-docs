@@ -42,6 +42,7 @@
 - https://docs.posetracker.com/web-sdks
 - https://docs.posetracker.com/permissions
 - https://docs.posetracker.com/media-sources
+- https://docs.posetracker.com/external-frames — host owns the camera (Vision Camera, expo-camera, getUserMedia). warmupExternal() then processFrame(). SDK returns {dropped, pose, events} and draws nothing. Same startExercise and event types. Longest side ≤ 256 px. Not the deprecated pixel. Not the iframe.
 - https://docs.posetracker.com/keypoints
 - https://docs.posetracker.com/api-key
 

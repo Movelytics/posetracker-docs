@@ -121,6 +121,12 @@ Remote MCP connector: https://mcp.posetracker.com/api/mcp (Streamable HTTP, OAut
 
 ---
 
+## https://docs.posetracker.com/external-frames
+
+SDK only. Host owns the camera and the preview. warmupExternal() loads the model and never calls getUserMedia. processFrame({ base64 | uri | image, width, height, timestampMs, mirrored?, mime? }) resolves { dropped, pose, events }. mirrored defaults to true (flip keypoints so an unmirrored front-camera buffer matches a mirrored preview). events for that frame also go to the normal listeners. One frame in flight; overlap returns dropped:true and the last pose. startExercise is the same call as the camera path and is not reset between frames. Longest side ≤ 256 px; the SDK does not downscale. Do not mix with WebViewPoseView camera or web start(). RN mounts a hidden 1×1 warmer; do not mount WebViewPoseView for this mode. RN does not emit stats / quality_changed / performance_warning here (those reopen the SDK camera). Web still emits stats. Vision Camera: JPEG from a frame processor or takeSnapshot + resize, not a raw RGB buffer. expo-camera: CameraView + takePictureAsync + resize. Web: draw the video into a ≤256 canvas and pass it as image. Not media-sources image mode (one shot). Not the deprecated pixel. Not the iframe.
+
+---
+
 ## https://docs.posetracker.com/reference/provider-client
 
 PoseTrackerProvider: apiToken optional, autoPreload false. usePoseTracker. Methods: preload, configure, startExercise, stopExercise, getAvailableExercises, dispose.

@@ -47,6 +47,7 @@ GitBook is no longer the canonical docs. When you add a redirect banner on each 
 | Reference movement | https://docs.posetracker.com/webview/reference-movement |
 | Platform tutorials (HTML, RN, iOS, Android, Flutter) | https://docs.posetracker.com/webview/embed |
 | SDK / Expo / React Native | https://docs.posetracker.com/quickstart |
+| Your camera, SDK data only | https://docs.posetracker.com/external-frames |
 | Web / JavaScript / React SDK | https://docs.posetracker.com/web-sdks |
 | Exercises | https://docs.posetracker.com/reference/exercises |
 | Engine / appearance | https://docs.posetracker.com/webview/query-params |
