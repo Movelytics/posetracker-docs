@@ -15,6 +15,18 @@ The **SDK** and the **WebView** share the same plan gating and error messages. S
 
 With a key, internet is required to authenticate and meter (`POST /api/sdk/configure`, `POST /api/sdk/track` `camera_start`). Offline metered sessions refuse key-gated features (`offline_metered`); keypoints-only keeps running from cache.
 
+## What counts as one tracking call
+
+One call = one open session, not one exercise. This is how metering already works; chaining exercises is an optional extra on top.
+
+| Integration | Counted once when… | Chain exercises in the same call | Starts a **new** call |
+|---|---|---|---|
+| WebView / iframe | The tracking page loads (token check) | Post `{ type: "set_exercise", exercise }` or `{ type: "set_exercise", userExercise }` to the open page. See [WebView messages](/webview/messages#switch-exercise-in-the-same-session) | Closing, reloading or unmounting the iframe / WebView, changing its `src` (any query param, including `exercise=`), navigating away, camera stopped |
+| SDK camera | `camera_start` (`POST /api/sdk/track`) when the camera opens | Call `startExercise('squat')`, then `startExercise('plank')` while the camera stays open | Unmounting `WebViewPoseView`, `stop()` then `start()`, any new camera open |
+| SDK external frames | `warmupExternal()` | `startExercise()` again while `processFrame` keeps running | A new client / new `warmupExternal()` session |
+
+On each switch, placement, the countdown and the counter restart for the new exercise; camera and model stay loaded. Example: squat then plank then lunge in the same open iframe (or the same SDK camera) = **1 call**. Close the iframe after squat, open it again for plank = **2 calls**.
+
 ## Feature flags
 
 Set on the provider:
@@ -136,5 +148,5 @@ To remove it on a build that would otherwise show it, set `showWatermark={false}
 - [WebView query parameters](/webview/query-params)
 
 <Note>
-**For LLMs:** Same gating on WebView and SDK. BlazePose is `options.model`, not a features flag. `difficulty` is SDK-only. `reference=` is WebView-only. Overlay/timer params are WebView-only. https://docs.posetracker.com/reference/features-plans
+**For LLMs:** Same gating on WebView and SDK. BlazePose is `options.model`, not a features flag. `difficulty` is SDK-only. `reference=` is WebView-only. Overlay/timer params are WebView-only. One billed call = one open session: chain exercises with `set_exercise` (iframe) or repeated `startExercise` (SDK, camera still open); closing the iframe/camera or changing the URL starts a new call. https://docs.posetracker.com/reference/features-plans
 </Note>

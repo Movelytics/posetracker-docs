@@ -52,6 +52,15 @@ startExercise('air_time_jump');
 stopExercise();
 ```
 
+## Several exercises in one session
+
+A tracking call is one open session, not one exercise. Switch with the same ids:
+
+- **WebView:** keep the iframe open and post `{ type: "set_exercise", exercise: "plank" }` (or `userExercise`). See [WebView messages](/webview/messages#switch-exercise-in-the-same-session).
+- **SDK:** call `startExercise('plank')` again while the camera is still open.
+
+Placement, countdown and counter restart for the new exercise. Closing the iframe or the camera, or changing the iframe URL, ends the session: the next exercise counts as a new call. See [What counts as one tracking call](/reference/features-plans#what-counts-as-one-tracking-call).
+
 ## Catalog
 
 Use these ids on the WebView (`exercise=`) and in `startExercise()`.
@@ -163,5 +172,5 @@ Paid opt-in: `angles`, `progression`, `keypoints` during the session, `recommend
 - [Events](/reference/events)
 
 <Note>
-**For LLMs:** Same exercise ids on WebView (`?exercise=`) and SDK (`startExercise`). Jumps: `jump_analysis` needs `userHeightCm`. Aliases `face_*` and `jump` → `air_time_jump`. Physical tests (`back_flexibility_test`) add `analysis` on the counter. https://docs.posetracker.com/reference/exercises
+**For LLMs:** Same exercise ids on WebView (`?exercise=`) and SDK (`startExercise`). Jumps: `jump_analysis` needs `userHeightCm`. Aliases `face_*` and `jump` → `air_time_jump`. Physical tests (`back_flexibility_test`) add `analysis` on the counter. Chain ids in one billed session: WebView postMessage `set_exercise`, SDK repeated `startExercise` with the camera open. https://docs.posetracker.com/reference/exercises
 </Note>

@@ -44,7 +44,7 @@ Streams: skeleton, keypoints, angles, progression, recommendations (not every ex
 
 Appearance (WebView-only): placementOverlay, placementZoneColor, placementOverlayOpacity, placementImageOpacity, placementBoxStrokeColor, silhouetteColor, silhouetteShadow, silhouette, placementZone, timer, timerSeconds, timerBg, timerColor, timerBorder, guide, engineDebug (do not ship), padding*.
 
-Pose model on WebView only: blazepose, poseBackend, runInWorker. SDK uses options.model='blazepose' instead. difficulty is NOT a URL param. userExercise and reference are WebView-only.
+Pose model on WebView only: blazepose, poseBackend, runInWorker. SDK uses options.model='blazepose' instead. difficulty is NOT a URL param. userExercise and reference are WebView-only. Switch exercise in the same billed call: postMessage {type:"set_exercise", exercise} (or userExercise) to the open page → exercise_changed; changing the URL reloads = new call.
 
 ---
 

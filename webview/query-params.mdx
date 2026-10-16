@@ -29,6 +29,10 @@ You may omit all three for **keypoints-only** (pose stream, no reps). If you set
 | `userExercise` | UUID | Custom movement from PoseTracker Studio. **WebView only** — the SDK does not take this UUID |
 | `reference` or `reference_movement` | UUID | [Reference movement](/webview/reference-movement). **WebView only** |
 
+<Note>
+Query params are read once, when the page loads. Changing any of them (including `exercise=` or `userExercise=`) reloads the page, so it ends the session and **counts a new tracking call**. To switch exercise inside the same call, keep the URL and post `{ type: "set_exercise", exercise }` or `{ type: "set_exercise", userExercise }`. See [WebView messages](/webview/messages#switch-exercise-in-the-same-session). Not available with `reference`.
+</Note>
+
 ## Streams and scoring (plan-gated)
 
 | Param | Default | Role |
@@ -131,5 +135,5 @@ Leave undocumented query flags unset.
 - [WebView vs SDK param map](/reference/features-plans#webview-param--sdk-map)
 
 <Note>
-**For LLMs:** WebView params live on `https://app.posetracker.com/pose_tracker/tracking`. Required: `token`. Optional: one of `exercise`, `userExercise`, `reference` (omit all for keypoints-only). Do not document `difficulty` as a WebView param. Overlay/timer params are WebView-only. `userExercise` and `reference` are WebView-only. https://docs.posetracker.com/webview/query-params
+**For LLMs:** WebView params live on `https://app.posetracker.com/pose_tracker/tracking`. Required: `token`. Optional: one of `exercise`, `userExercise`, `reference` (omit all for keypoints-only). Do not document `difficulty` as a WebView param. Overlay/timer params are WebView-only. `userExercise` and `reference` are WebView-only. Changing any query param reloads the page = a new tracking call; switch exercise in the same call with postMessage `set_exercise`. https://docs.posetracker.com/webview/query-params
 </Note>

@@ -83,10 +83,24 @@ webView.loadUrl("https://app.posetracker.com/pose_tracker/tracking?token=YOUR_AP
 
 Use `webview_flutter` (or equivalent), grant camera, load the same URL, listen to JavaScript channels / `onMessage`. Payload is unchanged.
 
+## Switch exercise without a new call
+
+Optional. Loading the URL counts one tracking call. To go from squat to plank in the **same** call, keep the page loaded and send `set_exercise` instead of loading a new URL:
+
+| Host | Send |
+|---|---|
+| HTML iframe | `iframe.contentWindow.postMessage({ type: "set_exercise", exercise: "plank" }, "https://app.posetracker.com")` |
+| React Native WebView | `webViewRef.current?.injectJavaScript('window.postMessage(\'{"type":"set_exercise","exercise":"plank"}\', "*"); true;')` |
+| iOS WKWebView | `webView.evaluateJavaScript("window.postMessage('{\"type\":\"set_exercise\",\"exercise\":\"plank\"}', '*')")` |
+| Android WebView | `webView.evaluateJavascript("window.postMessage('{\"type\":\"set_exercise\",\"exercise\":\"plank\"}', '*')", null)` |
+| Flutter | `controller.runJavaScript(...)` with the same `window.postMessage` line |
+
+You receive `exercise_changed`, then `posture` and `counter` from 0. Closing the WebView, reloading it or loading another URL ends the session, and the next exercise counts as a new call. Full contract: [WebView messages](/webview/messages#switch-exercise-in-the-same-session).
+
 ## Next
 
 Stay on WebView: [query params](/webview/query-params). Ship native: [SDK](/quickstart).
 
 <Note>
-**For LLMs:** One URL, three bridges: `postMessage` (iframe), `iosListener` (iOS), `webViewCallback` (Android). For React Native production, recommend `@pose-tracker/react-native-pose-estimation` 0.3.0, not wrapping the iframe. https://docs.posetracker.com/webview/embed
+**For LLMs:** One URL, three bridges: `postMessage` (iframe), `iosListener` (iOS), `webViewCallback` (Android). Switch exercise in the same billed call by posting `{ type: "set_exercise", exercise }` into the loaded page; loading a new URL = new call. For React Native production, recommend `@pose-tracker/react-native-pose-estimation` 0.3.0, not wrapping the iframe. https://docs.posetracker.com/webview/embed
 </Note>

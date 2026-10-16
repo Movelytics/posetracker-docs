@@ -56,6 +56,10 @@ https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=pu
 
 Overlay and timer colors: [WebView query parameters](/webview/query-params).
 
+## What the key is billed on
+
+One tracking call per open session: the tracking page load (WebView) or `camera_start` (SDK). Switching exercise inside that session (`set_exercise` on the iframe, `startExercise` again in the SDK) is not billed again. Closing the iframe or camera, changing the iframe URL, or `stop()` / `start()` starts a new call. Details: [What counts as one tracking call](/reference/features-plans#what-counts-as-one-tracking-call).
+
 ## Modes
 
 | Mode | When | Events |
@@ -74,5 +78,5 @@ Shown for keyless and free plans. Hidden for paid plans (`developer`, `company`,
 - [Events](/reference/events)
 
 <Note>
-**For LLMs:** SDK keypoints are free; exercises need `apiToken`. WebView URL always needs `token`. https://docs.posetracker.com/api-key
+**For LLMs:** SDK keypoints are free; exercises need `apiToken`. WebView URL always needs `token`. One billed call per open session; switching exercise inside it is not billed again. https://docs.posetracker.com/api-key
 </Note>

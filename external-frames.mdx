@@ -51,7 +51,7 @@ const result = await processFrame(frame);
 
 `events` is only what **this** frame produced (keypoints, posture, counter, …), in emission order. The same events are delivered to `usePoseTracker` / `on()` **before** the promise resolves. A dropped frame returns `{ dropped: true, pose: lastPose, events: [] }` and emits nothing new.
 
-With an API key, `warmupExternal()` counts **one** session, the same way opening the SDK camera does. Later frames are not counted again.
+With an API key, `warmupExternal()` counts **one** session, the same way opening the SDK camera does. Later frames are not counted again. Calling `startExercise('plank')` after `startExercise('squat')` while you keep sending frames is still the same call: placement and counter restart, nothing is re-counted. A new client (or a new `warmupExternal()` session after teardown) counts a new call.
 
 ## Coordinates
 

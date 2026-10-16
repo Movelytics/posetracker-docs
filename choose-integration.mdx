@@ -44,6 +44,7 @@ https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=pu
 - Camera: `allow="camera"` on the iframe + OS permission
 - Results: `postMessage` JSON (`counter`, `keypoints`, …)
 - Appearance: overlay, silhouette, and timer are **query parameters**
+- Several exercises in one call: keep the iframe open and post `{ type: "set_exercise", exercise: "plank" }`. Changing the URL or closing the iframe counts a new call
 
 Start: [WebView quickstart](/webview/quickstart) · [Query parameters](/webview/query-params) · [Messages](/webview/messages)
 
@@ -62,6 +63,7 @@ Install a package, wrap with `PoseTrackerProvider`, mount `WebViewPoseView` (Rea
 - Exercises need `apiToken`
 - Appearance is component props (`drawSkeleton`, `loadingText`, …), not URL params
 - Start an exercise with `startExercise('push_up', { difficulty, userHeightCm, devicePitchDeg })`
+- Several exercises in one call: call `startExercise` again while the camera stays open. Closing the view or `stop()` / `start()` counts a new call
 
 Start: [SDK quickstart](/quickstart) · [Try on a phone](/try-expo-go) · [Web SDKs](/web-sdks) · [Provider & client](/reference/provider-client)
 
@@ -79,6 +81,7 @@ Start: [SDK quickstart](/quickstart) · [Try on a phone](/try-expo-go) · [Web S
 | Reference movement | Yes | Not available yet |
 | Upload video/image | [Upload URL](/webview/upload) | [Media sources](/media-sources) |
 | `difficulty` | **Not read** | `startExercise(id, { difficulty })` |
+| Several exercises, 1 call | `postMessage({ type: "set_exercise", … })` | `startExercise` again, camera open |
 
 ## Recommended path
 
@@ -95,6 +98,9 @@ Start: [SDK quickstart](/quickstart) · [Try on a phone](/try-expo-go) · [Web S
   </Accordion>
   <Accordion title="Do I need an API key?">
     WebView: yes (`token=`). SDK keypoints: no. Rep counting and form score: yes, on both.
+  </Accordion>
+  <Accordion title="Squat then plank in one session: one call or two?">
+    One, if the session stays open: `set_exercise` on the open iframe, or `startExercise` again on the open SDK camera. Closing the iframe or camera, or changing the iframe URL, ends the session; the next exercise is a new call. See [What counts as one tracking call](/reference/features-plans#what-counts-as-one-tracking-call).
   </Accordion>
 </AccordionGroup>
 

@@ -110,7 +110,7 @@ const {
 | `preload` | `(options?: PreloadOptions) => Promise<void>` | Warm model (+ optional handshake/engine). Default `coldStart: 'basic'` — **no** camera. Alias: `warmup`. See [Preload](/advanced/preload). |
 | `warmup` | same as `preload` | Alias. |
 | `configure` | `(apiToken?: string) => Promise<boolean>` | Hot (re)config; `true` when full-engine. Does not restart the camera pipeline. |
-| `startExercise` | `(exerciseId: string, options?: StartExerciseOptions) => void` | Catalog id or custom jump. Requires full-engine. Unknown id → `invalid_exercise`. |
+| `startExercise` | `(exerciseId: string, options?: StartExerciseOptions) => void` | Catalog id or custom jump. Requires full-engine. Unknown id → `invalid_exercise`. Calling it again while the camera (or `processFrame`) is open switches exercise in the **same** tracking call. See [Several exercises, one call](#several-exercises-one-call). |
 | `stopExercise` | `() => void` | Ends session; may emit `exercise_summary`. |
 | `warmupExternal` | `() => Promise<void>` | Model only, no camera. Required before external frames. See [External frames](/external-frames). |
 | `processFrame` | external frame → `Promise<{ dropped, pose, events }>` | Host camera. One frame in flight. Same exercise session as `startExercise`. |
@@ -131,6 +131,18 @@ startExercise('squat', { difficulty: 'hard' });
 startExercise('jump_analysis', { userHeightCm: 178, devicePitchDeg: 5 });
 startExercise('air_time_jump');
 ```
+
+### Several exercises, one call
+
+The SDK counts one tracking call on `camera_start`, when the camera opens (or on `warmupExternal()` for [external frames](/external-frames)). `startExercise` never counts again. To chain exercises in one call, keep the camera open and call `startExercise` again:
+
+```ts
+startExercise('squat');
+// …later, same camera still open:
+startExercise('plank'); // previous session ends (exercise_summary may fire), placement + counter restart, no new call
+```
+
+Unmounting `WebViewPoseView` / `PoseCamera`, `stop()` then `start()`, or any new camera open ends the session; the next exercise **counts as a new call**. `stopExercise()` alone keeps the camera open, so a later `startExercise` is still the same call. See [What counts as one tracking call](/reference/features-plans#what-counts-as-one-tracking-call).
 
 ## Common recipes
 
@@ -188,5 +200,5 @@ Injectables (`backend`, `engineLoader`, `fileStore`, `usageTracker`) exist for t
 </Info>
 
 <Note>
-**For LLMs:** SDK params live on `PoseTrackerProvider` / `options` / `startExercise`, not URL query strings. Keypoints need no `apiToken`. Overlay/timer/reference/userExercise are WebView-only. Host-owned camera: `warmupExternal` + `processFrame` — https://docs.posetracker.com/external-frames. https://docs.posetracker.com/reference/provider-client
+**For LLMs:** SDK params live on `PoseTrackerProvider` / `options` / `startExercise`, not URL query strings. Keypoints need no `apiToken`. Overlay/timer/reference/userExercise are WebView-only. Host-owned camera: `warmupExternal` + `processFrame` — https://docs.posetracker.com/external-frames. Repeated `startExercise` while the camera stays open = same billed call; closing the camera or `stop()`/`start()` = new call. https://docs.posetracker.com/reference/provider-client
 </Note>

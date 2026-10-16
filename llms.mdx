@@ -51,6 +51,7 @@ import {
 - Overlay / timer colors are **WebView query params**, not SDK props.
 - `reference=` is WebView-only. Cannot combine with `exercise`. Not in the SDK yet.
 - `userExercise=` is WebView-only (PoseTracker Studio). Not in the SDK.
+- Billing: one tracking call = one open session, not one exercise. Chain exercises with postMessage `{ type: "set_exercise", exercise }` (or `userExercise`) on the open iframe, or repeated `startExercise` with the SDK camera open. Changing the iframe URL, closing the iframe/camera, or `stop()`/`start()` = new call. Optional: existing integrations are unchanged. https://docs.posetracker.com/reference/features-plans#what-counts-as-one-tracking-call
 - Pose-only WebView: `token` with no `exercise` still streams keypoints (token required).
 - `recommendations` is optional and **not sent for every exercise**. Use `counter.form_score` / `onCounter.formScore` for the grade.
 - Pixel tracking is out of scope on this site.

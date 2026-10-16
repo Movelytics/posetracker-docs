@@ -1,6 +1,6 @@
 ---
 title: "WebView messages"
-description: "postMessage contract for the PoseTracker WebView — initialization, counter, keypoints, errors, jumps, upload extras."
+description: "postMessage contract for the PoseTracker WebView — initialization, counter, keypoints, errors, jumps, upload extras, set_exercise."
 ---
 
 The hosted page sends JSON to the host. Browser embeds use `window.parent.postMessage(JSON.stringify(data), "*")`. iOS uses `webkit.messageHandlers.iosListener`. Android uses `window.webViewCallback`. **Same `type` field** in all three.
@@ -43,6 +43,46 @@ Live camera is `type: "initialization"` with `ready: true` and `message: "runnin
 
 Outside an exercise (pose-only URL), keypoints stream without extra flags. During an exercise, keypoints need `keypoints=true` + a paid plan.
 
+## Switch exercise in the same session
+
+Host → PoseTracker, optional. If you never send it, nothing changes: the URL loads, places, counts and is billed exactly as before.
+
+While the tracking page is open (`/pose_tracker/tracking` with `exercise=` or `userExercise=`), the host can switch the exercise **without reloading**:
+
+| Inbound `type` | Shape |
+|---|---|
+| `set_exercise` | `{ type: "set_exercise", exercise: "plank" }`. Catalog id, same values as the `exercise=` query param |
+| `set_exercise` | `{ type: "set_exercise", userExercise: "<uuid>" }`. Your Studio movement (owner API key) |
+
+What happens:
+
+- The camera and pose model keep running. Placement, the countdown (`timer=`) and the counter restart for the new exercise, like a first entry in the frame.
+- PoseTracker replies `{ type: "exercise_changed", exercise, userExercise }` (`userExercise` is `null` for catalog ids), then the usual flow: `posture`, then `counter` from 0.
+- **No new tracking call is billed.** The whole page load counts as one call, so squat then plank then lunge in the same open iframe = 1 call.
+- Send exactly one of `exercise` or `userExercise`. Not available with `reference=` or in pose-only mode (no exercise in the URL).
+- Unknown id, both fields, or not allowed in this mode → `{ type: "error", error: "invalid_exercise", message }`, and **the current exercise keeps running**. Sending the id already running is ignored.
+
+```js
+const iframe = document.getElementById("posetracker");
+// Plain object or JSON string, both accepted.
+iframe.contentWindow.postMessage(
+  { type: "set_exercise", exercise: "plank" },
+  "https://app.posetracker.com"
+);
+```
+
+In a React Native WebView (or a native WKWebView / Android WebView), run the post inside the page:
+
+```js
+webViewRef.current?.injectJavaScript(
+  `window.postMessage(${JSON.stringify(JSON.stringify({ type: "set_exercise", exercise: "plank" }))}, "*"); true;`
+);
+```
+
+<Warning>
+The session ends, and the next exercise **counts as a new call**, if you: close or unmount the iframe / WebView, reload it, change its `src` (any query param, including `exercise=`), navigate away, or the camera is stopped. To chain exercises for one call, keep the same page open and send `set_exercise`.
+</Warning>
+
 ## Jumps
 
 `jump_analysis` and `air_time_jump`:
@@ -80,5 +120,5 @@ When `reference=` is set, `counter` may include `reference_score`: `{ overallSco
 - [Features & plans](/reference/features-plans)
 
 <Note>
-**For LLMs:** WebView events are JSON with `type`. Counter field is `current_count`. SDK typed callback uses `count` / `formScore`. https://docs.posetracker.com/webview/messages
+**For LLMs:** WebView events are JSON with `type`. Counter field is `current_count`. SDK typed callback uses `count` / `formScore`. To chain exercises in one billed call, post `{ type: "set_exercise", exercise }` (or `userExercise`) to the open iframe; changing the iframe URL or closing it starts a new call. https://docs.posetracker.com/webview/messages
 </Note>

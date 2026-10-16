@@ -20,6 +20,7 @@
 - Camera permissions: host app owns the strings
 - Watermark: keyless/free shown; paid hidden
 - Positioning: WebView = quick test; SDK = production (performance, preload, offline)
+- Billing: 1 tracking call = 1 open session (WebView page load or SDK camera_start), not 1 exercise. Chain exercises with postMessage {type:"set_exercise", exercise} on the open iframe, or startExercise again with the SDK camera open. New iframe URL, closed iframe/camera, stop()+start() = new call
 
 ## Docs (this site)
 

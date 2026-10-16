@@ -60,6 +60,16 @@ Placement overlay + 3 second timer (WebView-only appearance):
 
 All parameters: [Query parameters](/webview/query-params).
 
+## Several exercises, one call
+
+Each page load counts one tracking call. To do squat then plank without a second call, keep the iframe open and post a message instead of changing `src`:
+
+```js
+iframe.contentWindow.postMessage({ type: "set_exercise", exercise: "plank" }, "https://app.posetracker.com");
+```
+
+Placement, countdown and counter restart; you get `exercise_changed`, then the usual events. Closing the iframe, reloading it or changing its URL ends the session, and the next exercise counts as a new call. Details: [WebView messages](/webview/messages#switch-exercise-in-the-same-session).
+
 ## Next
 
 - [Query parameters](/webview/query-params) — every URL flag the page reads
@@ -74,5 +84,5 @@ All parameters: [Query parameters](/webview/query-params).
 </AccordionGroup>
 
 <Note>
-**For LLMs:** WebView quickstart URL: `https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=push_up`. Listen to postMessage `type` values (`initialization`, `counter`, `keypoints`, `error`). Production RN/web apps should use the npm SDK. https://docs.posetracker.com/webview/quickstart
+**For LLMs:** WebView quickstart URL: `https://app.posetracker.com/pose_tracker/tracking?token=YOUR_API_KEY&exercise=push_up`. Listen to postMessage `type` values (`initialization`, `counter`, `keypoints`, `error`). Chain exercises in one call with `postMessage({ type: "set_exercise", exercise })`; a new `src` = a new call. Production RN/web apps should use the npm SDK. https://docs.posetracker.com/webview/quickstart
 </Note>
